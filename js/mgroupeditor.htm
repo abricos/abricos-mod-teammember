@@ -1,0 +1,52 @@
+<!--{widget}-->
+<div class="mgroupeditor editform" id="{i#id}">
+
+	<div class="{v#cledst}">
+		<div class="group">
+		
+			<h3 class="edstnew">Добавление группы</h3>
+			<h3 class="edstedit">Редактирование группы</h3>
+		
+			<div class="fieldline">
+		
+				<dl class="cmtitle">
+					<dt>Название</dt>
+					<dd>
+						<input id="{i#title}" class="inp" placeholder="" />
+					</dd>
+				</dl>
+			</div>
+		
+		</div>
+
+		<dl>
+			<dt>&nbsp;</dt>
+			<dd class="baction">
+				<input id="{i#bcreate}" value="Добавить" type="button" class="btn edstnew" />
+				<input id="{i#bsave}" value="Сохранить" type="button" class="btn edstedit" />
+				<input id="{i#bcancel}" value="Отмена" type="button" class="btn" />
+				<span id="{i#loading}" style="display: none">
+					<img src="/images/loading.gif" class="ldg" /> Сохранение...
+				</span>
+			</dd>
+		</dl>	
+		
+		<div class="clear"></div>
+	</div>
+	
+</div>
+
+<!--{select}-->
+<select id="{i#id}" class="inp">
+	<option value="0"> </option>
+	{v#rows}
+</select>
+
+<!--{option}-->
+<option value="{v#id}">{v#tl}</option>
+
+<!--{panel}-->
+<div class='hd'>Редактор группы</div>
+<div class='bd aw-job'>
+	<div id="{i#widget}" class="aw-company aw-team"></div>
+</div>

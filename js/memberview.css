@@ -1,0 +1,22 @@
+/* * * * * * Страница участника * * * * * */
+.aw-team .memberview .empavt,
+.aw-team .memberview .empinfo {
+	float: left;
+}
+
+/* * * * * * Приглашение, подтверждение * * * * * */
+.aw-team .memberview .empstat dl {
+	color: red;
+}
+.aw-team .memberview .inviteact {
+	width: 500px;
+	margin: 20px 0 20px 130px;
+}
+.aw-team .memberview .inviteact p {
+	color: red;
+	font-size: 1.3em;
+}
+.aw-team .memberview .inviteact .agreement,
+.aw-team .memberview .inviteact .baction {
+	margin-top: 10px;
+}

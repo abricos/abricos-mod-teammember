@@ -1,0 +1,75 @@
+<!--{grouplist}-->
+<div id="{i#id}" class="aw-team">
+	<div id="{i#loading}" class="loading">
+		<img src="/images/loading.gif" /> Идет загрузка данных <br /> Пожалуйста, подождите...
+	</div>
+
+	<div id="{i#nullitem}" class="nullitem" style="display: none">
+		{##nullitem}
+	</div>
+	
+	<div id="{i#rlwrap}" class="groups" style="display: none">
+		<div class="hdtitle">
+			<div id="{i#btns}" class="rbtns" style="display: none">
+				<span id="{i#bbtns}">
+					<a id="{i#bgroupadd}" href="#" class="habtn">{##bgroupadd}</a>
+					<a id="{i#bmemberadd}" href="#" class="habtn">{##bmemberadd}</a>
+				</span>
+				<span id="{i#edloading}" style="display: none">
+					<img src="/images/loading.gif" /> Загрузка...
+				</span>
+			</div>
+			<span class="tl">{##members}</span>
+		</div>
+		<div id="{i#editor}" class="dpeditor"></div>
+		<div id="{i#emplist}" class="emplist"></div>
+		<div id="{i#list}" class="grouplist"></div>
+	</div>
+</div>
+
+<!--{grouprow}-->
+<div id="{i#id}" class="grouprow">
+	<div class="ihd">
+		<div id="{i#btns}" class="rbtns" style="display: none">
+			<span id="{i#bbtns}">
+				<a id="{i#bgroupedit}" href="#" class="habtn">{##bgroupedit}</a>
+				<a id="{i#bmemberadd}" href="#" class="habtn">{##bmemberaddin}</a>
+			</span>
+			<span id="{i#edloading}" style="display: none">
+				<img src="/images/loading.gif" /> Загрузка...
+			</span>
+		</div>
+		<span id="{i#grouptl}">{v#tl}</span>
+	</div>
+	<div class="ibd">
+		<div id="{i#editor}" class="dpeditor"></div>
+		<div id="{i#emplist}"></div>
+	</div>
+</div>
+
+<!--{list}-->
+<div id="{i#id}" class="memberlist aw-uprofile">
+	<div id="{i#list}"></div>
+	<div class="clear"></div>
+</div>
+
+<!--{row}-->
+<div id="{i#id}" class="memberrow">
+	<div id="{i#view}"></div>
+</div>
+
+<!--{rowview}-->
+<div id="{i#id}" class="view">
+	{v#isinvite}
+	<a href="{v#uriview}" class="avtr tmb tmb45">
+		<span class="tmbpre">
+			{v#avatar}
+		</span>
+	</a>
+	<a class="unm" href="{v#urlview}">{v#unm}</a>
+	<div id="{i#overinfo}"></div>	
+	<div class="clear"></div>
+</div>
+
+<!--{isinvite}-->
+<div class="isinvite" title="Пользователь пока не подтвердил эту информацию">!</div>

@@ -1,0 +1,101 @@
+<!--{widget}-->
+<div id="{i#id}" class="aw-team">
+	<div id="{i#loading}" class="loading">
+		<img src="/images/loading.gif" /> Идет загрузка данных <br /> Пожалуйста, подождите...
+	</div>
+
+	<div id="{i#nullitem}" class="nullitem" style="display: none">
+		Участник не найден или недостаточно прав для просмотра
+	</div>
+
+	<div id="{i#rlwrap}" class="memberview" style="display: none">
+		<div class="hdtitle">
+			<div id="{i#btns}" class="rbtns" style="display: none">
+				<span id="{i#bbtns}">
+					<a id="{i#bempedit}" href="#" class="habtn" >Редактировать</a>
+					<a id="{i#bempremove}" href="#" class="habtn" >Удалить</a>
+				</span>
+				<span id="{i#edloading}" style="display: none">
+					<img src="/images/loading.gif" /> Загрузка...
+				</span>
+			</div>
+			<span class="tl">
+				<a id="{i#urlmemberlist}" href="#">{##members}</a>
+				&nbsp;→&nbsp;
+				<span id="{i#unm}"></span>
+			</span>
+		</div>
+		
+		<div id="{i#view}">
+			<div class="empavt">
+				<a href="#app=uprofile/ws/showws/{v#uid}/" class="avtr tmb tmb180">
+					<span id="{i#avatar}" class="tmbpre"></span>
+				</a>
+			</div>
+			
+			<div class="empinfo viewform">
+				
+				<div id="{i#empstat}" class="empstat" style="display: none">
+				
+					<dl>
+						<dt>Статус</dt>
+						<dd>
+							<div id="{i#btnisjrq}">
+								{##joinrequest}:
+								<a id="bisjrqyes" href="#" class="habtn">Подтверждаю</a>
+								<a id="bisjrqno" href="#" class="habtn">Не подтверждаю</a>
+							</div>
+							<div id="{i#infoisjrq}">
+								Пользователь пока не подтвердил эту информацию
+							</div>
+						</dd>
+					</dl>
+				</div>
+				
+				<dl>
+					<dt>Профиль пользователя</dt>
+					<dd>
+						<a href="#app=uprofile/ws/showws/{v#uid}/">открыть &gt;&gt;</a>
+					</dd>
+				</dl>
+				
+				<dl id="{i#fldgroup}">
+					<dt>{##group}</dt>
+					<dd>
+						<div id="{i#grouptitle}"></div>
+					</dd>
+				</dl>
+				
+				<div id="{i#overfields}"></div>
+				
+				<div class="clear"></div>
+			</div>
+			
+		</div>
+		<div id="{i#editor}" class="clear"></div>
+	</div>
+</div>
+
+<!--{inviteact}-->
+<div id="{i#id}" class="inviteact">
+	<p class="center">
+		<a href="#" class="show-user-profile user-{v#uid}">{v#unm}</a> {##inviteact.havemember}
+	</p>
+	
+	<div class="agreement center" style="display: none">
+		<input id="{i#agreement}" type="checkbox" />
+		<label for="{i#agreement}">
+			&nbsp; Я согласен с <a id="{i#termsofuse}" href="/user/termsofuse/">пользовательским соглашением</a>
+		</label>
+	</div>
+	
+	<div class="baction center">
+		<span id="{i#btns}">
+			<input id="{i#byes}" value="Подтверждаю" type="button" class="btn" disabled="disabled"/>
+			<input id="{i#bno}" value="Нет, это ошибка" type="button" class="btn" />
+		</span>
+		<span id="{i#loading}" style="display: none">
+			<img src="/images/loading.gif" class="ldg" /> Сохранение...
+		</span>
+	</div>
+</div>

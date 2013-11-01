@@ -1,0 +1,244 @@
+<!--{widget}-->
+<div class="aw-team" id="{i#id}">
+
+	<div id="{i#loading}" class="loading">
+		<img src="/images/loading.gif" />
+		Идет загрузка данных. Пожалуйста, подождите...
+	</div>
+	
+	<div id="{i#editor}" class="membereditor editform" style="display: none">
+	
+		<div class="{v#cledst}">
+			<div class="group">
+				<h3 class="edstnew">{##membernew}</h3>
+				<h3 class="edstedit">{##memberedit}</h3>
+			</div>
+
+			<div id="{i#mynameeditor}"></div>
+
+			<div id="{i#profileok}" style="display: none">
+
+				<div id="{i#existjoin}"></div>
+				<div id="{i#invite}"></div>
+
+				<div id="{i#empinfo}" style="display: none">
+				
+					<div id="{i#empunm}" class="group" >
+						<dl class="userfname">
+							<dt>Имя</dt>
+							<dd>
+								<input id="{i#userfname}" class="inp"  onfocus="this.select()" />
+							</dd>
+						</dl>
+	
+						<dl class="userfname">
+							<dt>Фамилия</dt>
+							<dd>
+								<input id="{i#userlname}" class="inp"  onfocus="this.select()" />
+							</dd>
+						</dl>
+						
+					</div>
+					<div class="group" >
+
+						<dl>
+							<dt>{##group}</dt>
+							<dd>
+								<div id="{i#groups}"></div>
+							</dd>
+						</dl>
+					</div>
+					
+					<div id="{i#overfields}"></div>
+
+				</div>
+			
+				<dl>
+					<dt>&nbsp;</dt>
+					<dd class="baction">
+						<span id="{i#btns}">
+							<input id="{i#bcreate}" value="Добавить" type="button" class="btn edstnew" disabled="disabled" />
+							<input id="{i#bsave}" value="Сохранить" type="button" class="btn edstedit" />
+							<input id="{i#bskip}" value="Пропустить этот шаг" type="button" class="btn edstnew" />
+							<input id="{i#bcancel}" value="Отмена" type="button" class="btn" />
+						</span>
+						<span id="{i#bloading}" style="display: none">
+							<img src="/images/loading.gif" class="ldg" /> Сохранение...
+						</span>
+						<span id="{i#err0}" class="error" style="display: none">
+							{##membernamefill}
+						</span>
+						<span id="{i#err1}" class="error" style="display: none">
+							{##memberexist}
+						</span>
+					</dd>
+				</dl>	
+					
+				<div class="clear"></div>
+			</div>			
+		</div>
+	</div>
+</div>
+
+<!--{myname}-->
+<div id="{i#id}">
+	<div id="{i#fields}" class="group">
+		<p>
+			Для продолжения Вам необходимо указать свое имя и фамилию
+		</p>
+		<br />
+		<dl class="userfname">
+			<dt>Имя</dt>
+			<dd>
+				<input id="{i#myfname}" class="inp" />
+			</dd>
+		</dl>
+
+		<dl class="userfname">
+			<dt>Фамилия</dt>
+			<dd>
+				<input id="{i#mylname}" class="inp" />
+			</dd>
+		</dl>
+	
+	</div>	
+
+	<dl>
+		<dt>&nbsp;</dt>
+		<dd class="baction">
+			<span id="{i#mypbtns}">
+				<input id="{i#bsave}" value="Сохранить" type="button" class="btn" />
+				<input id="{i#bcancel}" value="Отмена" type="button" class="btn" />
+			</span>
+			<span id="{i#myloading}" style="display: none">
+				<img src="/images/loading.gif" class="ldg" /> Сохранение...
+			</span>
+		</dd>
+	</dl>	
+</div>
+
+<!--{existjoin}-->
+<div id="{i#id}" class="group existjoin">
+
+	<h4>{##memberaddfrom}</h4>
+	
+	<dl class="email">
+		<dt>{##memberselect}</dt>
+		<dd>
+			<div id="{i#select}"></div>
+		</dd>
+	</dl>
+	
+</div>
+
+<!--{invite}-->
+<div id="{i#id}" class="group invite">
+
+	<h4>Приглашение по адресу электронной почты</h4>
+
+	<dl class="email">
+		<dt>{##memberemailenter}</dt>
+		<dd>
+			<div class="inpline">
+				<input id="{i#email}" class="inp" placeholder="" onfocus="this.select()"/>
+				<input id="{i#bfind}" value="Проверить" type="button" class="btn" />
+				<img id="{i#emlld}" class="ld" src="/images/loading.gif" style="display: none"/>
+			</div>
+		</dd>
+	</dl>
+
+	<div id="{i#usernotfound}" style="display: none">
+		<dl>
+			<dt>&nbsp;</dt>
+			<dd>
+				<p>
+					Пользователь с email <span id="{i#resemail0}" class="eml"></span> не 
+					зарегистрирован в системе
+					<br />
+					<br />
+					{##memberafterappendnew}
+					<br />
+					<br />
+					Количество не подтвержденных учетных записей в системе ограничено, 
+					поэтому рекомендуем вам тщательным образом проверить введенный 
+					email
+				</p>
+			</dd>
+		</dl>
+	</div>
+	
+	<div id="{i#userfound}" style="display: none">
+		<div id="{i#empfound}">
+			<dl>
+				<dt>&nbsp;</dt>
+				<dd>
+					<p>
+						{##memberemailexist} 
+						<span id="{i#resemail1}" class="eml"></span>
+					</p>
+				</dd>
+			</dl>
+		</div>
+	
+		<div id="{i#empnotfound}">
+			<dl>
+				<dt>&nbsp;</dt>
+				<dd>
+					<p>
+						Найден зарегистрированный пользователь с email 
+						<span id="{i#resemail2}" class="eml"></span>
+					</p>
+				</dd>
+			</dl>
+
+			<dl class="empusername">
+				<dt>Учетная запись</dt>
+				<dd>
+					<input id="{i#username}" class="inp" readonly="readonly" disabled="disabled"/>
+				</dd>
+			</dl>
+
+			<dl>
+				<dt>&nbsp;</dt>
+				<dd>
+					<p>
+						{##memberafterappend}
+					</p>
+				</dd>
+			</dl>
+
+		</div>
+		
+	</div>
+	
+	<div id="{i#waitinfo}" style="display: none">
+		<dl>
+			<dt>&nbsp;</dt>
+			<dd>
+				<p>
+					Количество не подтвержденных приглашений: {v#waitcnt}<br /> 
+					Вы можете отправить приглашений: {v#invcnt}
+				</p>
+			</dd>
+		</dl>
+	</div>
+</div>
+
+<!--{removepanel}-->
+<div class='hd'>{##memberremove.title}</div>
+<div class='bd aw-company'>
+	<div id="{i#dialogremove}" class="field">
+		<p>
+			{##memberremove.question}
+		</p>
+		<div class="buttons right">
+			<span id="{i#btns}">
+				<input id="{i#bremove}" value="Удалить" type="button" />
+				<input id="{i#bcancel}" value="Отмена" type="button" />
+			</span>
+			<span id="{i#bloading}" style="display: none">
+				<img src="/images/loading.gif" /> Удаление...
+			</span>
+		</div>
+	</div>
+</div>
