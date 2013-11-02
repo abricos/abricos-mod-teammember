@@ -15,6 +15,7 @@ Component.entryPoint = function(NS){
 		E = YAHOO.util.Event,
 		L = YAHOO.lang;
 	
+	var NSTM = Brick.mod.team;
 	var BW = Brick.mod.widget.Widget;
 	var buildTemplate = this.buildTemplate;
 	
@@ -61,10 +62,16 @@ Component.entryPoint = function(NS){
 			this.elShow('loading');
 			this.elHide('rlwrap');
 			
+			this.team.extended.load(this.cfg['modName'], 'member', function(extData){
+Brick.console(extData);				
+			});
+			
+			/*
 			var __self = this;
 			this.team.manager.memberListLoad(this.team, function(list){
 				__self.render();
 			});
+			/**/
 		},
 		_clearWS: function(){
 			var ws = this._wList;

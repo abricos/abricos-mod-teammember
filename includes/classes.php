@@ -6,6 +6,7 @@
  * @author Alexander Kuzmin <roosit@abricos.org>
  */
 
+require_once 'modules/team/includes/classes.php';
 require_once 'modules/team/includes/classesapp.php';
 require_once 'classesman.php';
 
@@ -75,7 +76,7 @@ class TeamMemberDetail {
 class TeamMemberList extends AbricosList { }
 
 
-class TeamMemberGroup extends TeamItem {
+class TeamMemberGroup extends AbricosItem {
 
 	public $title;
 
@@ -90,9 +91,9 @@ class TeamMemberGroup extends TeamItem {
 		return $ret;
 	}
 }
-class TeamMemberGroupList extends TeamItemList { }
+class TeamMemberGroupList extends AbricosList { }
 
-class MemberInGroup extends  TeamItem {
+class MemberInGroup extends  AbricosItem {
 	private static $_id = 1;
 	public $groupid;
 	public $memberid;
@@ -111,7 +112,7 @@ class MemberInGroup extends  TeamItem {
 	}
 }
 
-class TeamMemberInGroupList extends TeamItemList {
+class TeamMemberInGroupList extends AbricosList {
 
 	/**
 	 * @return MemberInGroup

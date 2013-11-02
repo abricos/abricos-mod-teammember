@@ -53,19 +53,6 @@ class TeamMemberManager extends TeamAppManager {
 	 */
 	public function NewMemberList(){ return new $this->MemberListClass(); }
 	
-	public function AJAX($d){
-		$ret = parent::AJAX($d);
-		
-		if (empty($ret)){
-			$users = TeamUserManager::ToAJAX();
-			if (!empty($users)){
-				$ret->users = $users;
-			}
-		}
-	
-		return $ret;
-	}
-	
 	public function AJAXMethod($d){
 		switch($d->do){
 			
@@ -129,8 +116,7 @@ class TeamMemberManager extends TeamAppManager {
 	}
 	
 	public function TeamExtendedDataToAJAX($teamid){
-		$ret = new stdClass();
-		$ret->id = $teamid;
+		$ret = parent::TeamExtendedDataToAJAX($teamid);
 		
 		$obj = $this->MemberListToAJAX($teamid);
 		$ret->members = $obj->ToAJAX();

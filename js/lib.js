@@ -14,6 +14,7 @@ Component.entryPoint = function(NS){
 	var Dom = YAHOO.util.Dom,
 		L = YAHOO.lang;
 
+	var UP = Brick.mod.uprofile;
 	var SysNS = Brick.mod.sys;
 
 	this.buildTemplate({}, '');
@@ -21,6 +22,7 @@ Component.entryPoint = function(NS){
 	var _MBMODULENAMECACHE = {};
 	
 	// Дополнительные данные сообщества
+	/*
 	var AppData = function(d){
 		d = L.merge({
 			'members': null,
@@ -40,13 +42,8 @@ Component.entryPoint = function(NS){
 		}
 	});
 	NS.AppData = AppData;
+	/**/
 
-	var AppDataList = function(d){
-		AppDataList.superclass.constructor.call(this, d, AppData);
-	};
-	YAHOO.extend(AppDataList, SysNS.ItemList, {});
-	NS.AppDataList = AppDataList;
-	
 	var Member = function(d){
 		d = L.merge({
 			'm': '',
@@ -187,10 +184,6 @@ Component.entryPoint = function(NS){
 	NS.Navigator = Navigator;
 		
 	var MemberManager = function(modname, callback, cfg){
-		this.modname = modname;
-		
-		this.appDataList = new AppDataList();
-		
 		cfg = L.merge({
 			'MemberClass':			Member,
 			'MemberDetailClass':	MemberDetail,
@@ -217,10 +210,12 @@ Component.entryPoint = function(NS){
 			'panel': 'MemberRemovePanel'
 		}, cfg['memberEditor'] || {});
 		
-		this.init(callback, cfg);
+		MemberManager.superclass.constructor.call(this, modname, callback, cfg);
 	};
-	MemberManager.prototype = {
+	YAHOO.extend(MemberManager, Brick.mod.team.TeamAppManager, {
 		init: function(callback, cfg){
+			MemberManager.superclass.init.call(this, callback, cfg);
+			
 			this.cfg = cfg;
 			
 			this.MemberClass		= cfg['MemberClass'];
@@ -228,12 +223,9 @@ Component.entryPoint = function(NS){
 			this.MemberListClass	= cfg['MemberListClass'];
 			this.NavigatorClass		= cfg['NavigatorClass'];
 			
-			this._loadInitData = true;
 			this._cacheMember = {};
-			
-			this.users = UP.viewer.users;
 		},
-		
+		/*
 		ajax: function(d, callback){
 			d = d || {};
 			d['tm'] = Math.round((new Date().getTime())/1000);
@@ -263,6 +255,7 @@ Component.entryPoint = function(NS){
 		},
 		
 		onLoadInitData: function(d){ },
+		/**/
 		
 		/*
 		_updateMemberGroupList: function(team, d){
@@ -391,68 +384,7 @@ Component.entryPoint = function(NS){
 			});
 		}
 		
-	};
+	});
 	NS.MemberManager = MemberManager;
-	
-	MemberManager.get = function(modname){
-		var man = Brick.mod[modname]['memberManager'];
-		if (!L.isObject(man)){
-			man = null;
-		}
-		return man;
-	};
-	
-	MemberManager.init = function(modname, callback){
-		var NSMod = Brick.mod[modname];
-		if (!L.isValue(NSMod)){
-			NS.life(callback, null);
-		}else{
-			NSMod.initMemberManager(function(man){
-				NS.life(callback, man);
-			});
-		}
-	};
-	
-	NS.getMember = function(memberid, callback, cfg){
-		cfg = L.merge({
-			'modName': null
-		}, cfg || {});
-		
-		var memberLoad = function(mName){
-			Brick.ff(mName, 'lib', function(){
-				var mNS = Brick.mod[mName] || {};
-				if (!L.isFunction(mNS['initMemberManager'])){
-					NS.life(callback, null);
-				}else{
-					mNS['initMemberManager'](function(man){
-						man.memberLoad(memberid, function(member, team){
-							NS.life(callback, member, team);
-						});
-					});
-				}
-			});
-		};
-		
-		if (L.isString(cfg['modName']) && cfg['modName'].length > 0){
-			memberLoad(cfg['modName']);
-		}else if (L.isValue(_EMODULENAMECACHE[memberid])){
-			memberLoad(_MBMODULENAMECACHE[memberid]);
-		}else{
-			Brick.ajax('teammember', {
-				'data': {
-					'do': 'membermodulename',
-					'memberid': memberid
-				},
-				'member': function(request){
-					if (L.isValue(request) && L.isValue(request.data)){
-						var mName = request.data;
-						memberLoad(mName);
-					}else{
-						NS.life(callback, null);
-					}
-				}
-			});		
-		}
-	};
 	
 };
