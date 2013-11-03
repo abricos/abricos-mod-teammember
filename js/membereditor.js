@@ -7,7 +7,8 @@ var Component = new Brick.Component();
 Component.requires = {
 	mod:[
 		{name: 'uprofile', files: ['users.js']},
-		{name: 'team', files: ['groupeditor.js', 'editor.js']}
+		{name: 'team', files: ['editor.js']},
+		{name: '{C#MODNAME}', files: ['groupeditor.js', 'lib.js']}
 	]
 };
 Component.entryPoint = function(NS){
@@ -19,46 +20,68 @@ Component.entryPoint = function(NS){
 	var UID = Brick.env.user.id;
 	var buildTemplate = this.buildTemplate;
 
-	var MemberEditorWidget = function(container, team, member, callback, cfg){
+	var MemberEditorWidget = function(container, teamid, memberid, cfg){
 		cfg = L.merge({
+			'modName': null,
+			'callback': null,
 			'override': null
 		}, cfg || {});
 		MemberEditorWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'widget', 
 			'override': cfg['override']
-		}, team, member, callback, cfg);
+		}, teamid, memberid, cfg);
 	};
 	YAHOO.extend(MemberEditorWidget, Brick.mod.widget.Widget, {
-		init: function(team, member, callback, cfg){
-			this.team = team;
-			this.member = member;
-			this.callback = callback;
+		init: function(teamid, memberid, cfg){
+			this.teamid = teamid;
+			this.memberid = memberid;
 			this.cfg = cfg;
+
+			this.teamAppData = null;
+			this.member = null;
+			
 			this.inviteWidget = null;
 			this._isVirtual = false;
 		},
-		buildTData: function(team, member, callback, cfg){
-			return {'cledst':member.id==0?'edstnew': 'edstedit'};
+		buildTData: function(teamid, memberid, cfg){
+			return {'cledst':memberid==0?'edstnew': 'edstedit'};
 		},
-		onLoad: function(team, member, callback, cfg){
-			if (member.id == 0){
+		onLoad: function(teamid, memberid, cfg){
+			var __self = this;
+			Brick.mod.team.teamAppDataLoad(teamid, cfg['modName'], 'member', function(taData){
+				__self.onLoadTeamAppData(taData);
+			});
+		},
+		onLoadTeamAppData: function(taData){
+			this.teamAppData = taData;
+
+			if (!L.isValue(taData)){
+				this.elHide('loading');
+				this.elShow('nullitem');
+				return;
+			}
+			
+			var cfg = this.cfg;
+			
+			if (this.memberid == 0){
 				var __self = this;
-				this.inviteWidget = new NS.MemberInviteWidget(this.gel('invite'), team, {
+				this.inviteWidget = new NS.MemberInviteWidget(this.gel('invite'), taData, {
 					'override': cfg['override'],
 					'startCallback': function(eml){ },
 					'finishCallback': function(eml, user, femp){
 						__self.render();
 					}
 				});
-				this.existJoinWidget = new NS.MemberExistingJoinWidget(this.gel('existjoin'), team, {
+				this.existJoinWidget = new NS.MemberExistingJoinWidget(this.gel('existjoin'), taData, {
 					'override': cfg['override'],
 					'callback': function(){
 						__self.render();
 					}
 				});
 			}
-			var groupid = team.memberInGroupList.getGroupId(member.id);
-			this.groupSelectWidget = new NS.GroupSelectWidget(this.gel('groups'), team, groupid);
+			var groupid = taData.inGroupList.getGroupId(memberid);
+			this.groupSelectWidget = new NS.GroupSelectWidget(this.gel('groups'), taData, groupid);
+
 		},
 		onClick: function(el, tp){
 			this.clearError();
@@ -323,7 +346,7 @@ Component.entryPoint = function(NS){
 	});
 	NS.MemberExistingJoinWidget = MemberExistingJoinWidget;
 	
-	var MemberInviteWidget = function(container, team, cfg){
+	var MemberInviteWidget = function(container, taData, cfg){
 		cfg = L.merge({
 			'startCallback': null,
 			'finishCallback': null,
@@ -332,11 +355,11 @@ Component.entryPoint = function(NS){
 		MemberInviteWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'invite',
 			'override': cfg['override']
-		}, team, cfg);
+		}, taData, cfg);
 	};
 	YAHOO.extend(MemberInviteWidget, Brick.mod.widget.Widget, {
-		init: function(team, cfg){
-			this.team = team;
+		init: function(taData, cfg){
+			this.taData = taData;
 			this.cfg = cfg;
 			this.value = null;
 			this._isProcess = false;

@@ -45,7 +45,7 @@ Component.entryPoint = function(NS){
 			var __self = this;
 			Brick.mod.team.teamLoad(teamid, function(team){
 				__self.onLoadTeam(team);
-			}, cfg['modName']);
+			});
 		},
 		onLoadTeam: function(team){
 			this.team = team;
@@ -119,7 +119,12 @@ Component.entryPoint = function(NS){
 			this.memberListWidget = new cfg['MemberListWidgetClass'](this.gel('emplist'), taData, {
 				'groupid': 0
 			});
-		
+
+			if (team.role.isAdmin){
+				var mcfg = taData.manager.cfg['memberEditor'];
+				this.componentLoad(mcfg['module'], mcfg['component'], function(){
+				}, {'hide': 'bbtns', 'show': 'edloading'});
+			}
 		},
 		closeEditors: function(){
 			if (L.isNull(this._editor)){ return; }
@@ -137,32 +142,31 @@ Component.entryPoint = function(NS){
 			
 			this.componentLoad(mcfg['module'], mcfg['component'], function(){
 				__self.elHide('btns,list,emplist');
-				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), taData, group, function(act){
-					__self.closeEditors();
-					if (act == 'save'){ __self.render(); }
+				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), taData, group, {
+					'callback': function(act){
+						__self.closeEditors();
+						if (act == 'save'){ __self.render(); }
+					}
 				});
 				
 			}, {'hide': 'bbtns', 'show': 'edloading'});
 		},
 		showMemberEditor: function(memberid){
-			
-			memberid = memberid||0;
 			this.closeEditors();
 			
-			var __self = this, team = this.team, mcfg = this.team.manager.cfg['memberEditor'],
-				member = memberid==0 ? new team.manager.MemberClass(team) : list.get(memberid);
+			var __self = this, taData = this.teamAppData, mcfg = taData.manager.cfg['memberEditor'];
 
-			this.componentLoad(mcfg['module'], mcfg['component'], function(){
-				__self.elHide('btns,list,emplist');
-				
-				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), team, member, function(act, newMember){
+			this.elHide('btns,list,emplist');
+			
+			this._editor = new Brick.mod[mcfg['module']][mcfg['widget']](this.gel('editor'), taData.team.id, memberid|0, {
+				'callback': function(act, newMember){
 					__self.closeEditors();
 					
 					if (act == 'save'){
 						__self.render(); 
 					}
-				});
-			}, {'hide': 'bbtns', 'show': 'edloading'});
+				}
+			});
 		}
 	});
 	NS.GroupListWidget = GroupListWidget;
