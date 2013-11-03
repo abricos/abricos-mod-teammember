@@ -12,17 +12,28 @@ require_once 'classesman.php';
 
 class TeamMemberNavigator extends TeamAppNavigator { }
 
-/**
- * Данные приложения сообщества
- */
-/*
-class TeamMemberAppData extends AbricosItem {
-	public $memberList;
-	public $memberGroupList;
-	public $memberInGroupList;
-
+class TeamMemberInitData extends TeamAppInitData {
+	/**
+	 * Количество не подтвержденных приглашений
+	 * @var integer
+	 */
+	public $inviteWaitCount = 0;
+	
+	/**
+	 * Лимит не подтвержденных приглашений
+	 * @var integer
+	 */
+	public $inviteWaitLimit = 0;
+	
+	public function ToAJAX(){
+		$ret = parent::ToAJAX();
+		
+		$ret->iwCount = $this->inviteWaitCount;
+		$ret->iwLimit = $this->inviteWaitLimit;
+		
+		return $ret;
+	}
 }
-/**/
 
 class TeamMember extends AbricosItem {
 

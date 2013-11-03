@@ -81,6 +81,21 @@ class TeamMemberManager extends TeamAppManager {
 		return TeamModuleManager::$instance->Team($teamid);
 	}
 	
+	public function InitData(){
+		$initData = parent::InitData();
+		
+		if (false){
+			$initData = new TeamMemberInitData($this);
+		}
+		
+		if ($this->userid > 0){
+			$initData->inviteWaitLimit = $this->IsAdminRole() ? -1 : 5;
+			$initData->inviteWaitCount = TeamMemberQuery::MemberInviteWaitCountByUser($this->db, $this->userid);
+		}
+		
+		return $initData;
+	}
+	
 	public function TeamExtendedDataToAJAX($teamid){
 		$ret = parent::TeamExtendedDataToAJAX($teamid);
 		
