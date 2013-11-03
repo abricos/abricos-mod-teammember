@@ -31,6 +31,12 @@ class TeamMember extends AbricosItem {
 	public $module;
 	
 	/**
+	 * Роль пользователя в сообществе
+	 * @var TeamUserRole
+	 */
+	public $role;
+	
+	/**
 	 * @var TeamMemberDetail
 	 */
 	public $detail = null;
@@ -41,6 +47,9 @@ class TeamMember extends AbricosItem {
 		$this->teamid = intval($d['tid']);
 		$this->userid = intval($d['uid']);
 		$this->module = strval($d['m']);
+		
+		// $this->role = $team->Manager()->NewTeamUserRole($team, $this->id, $d);
+		
 	}
 	
 	public function ToAJAX(){
@@ -49,6 +58,8 @@ class TeamMember extends AbricosItem {
 		$ret->uid	= $this->userid;
 		$ret->m		= $this->module;
 
+		// $ret->role = $this->role->ToAJAX();
+		
 		if (!empty($this->detail)){
 			$ret->dtl = $this->detail->ToAJAX();
 		}
@@ -93,13 +104,13 @@ class TeamMemberGroup extends AbricosItem {
 }
 class TeamMemberGroupList extends AbricosList { }
 
-class MemberInGroup extends  AbricosItem {
+class TeamMemberInGroup extends  AbricosItem {
 	private static $_id = 1;
 	public $groupid;
 	public $memberid;
 
 	public function __construct($d){
-		$this->id = MemberInGroup::$_id++;
+		$this->id = TeamMemberInGroup::$_id++;
 		$this->memberid = intval($d['uid']);
 		$this->groupid = intval($d['gid']);
 	}
@@ -115,7 +126,7 @@ class MemberInGroup extends  AbricosItem {
 class TeamMemberInGroupList extends AbricosList {
 
 	/**
-	 * @return MemberInGroup
+	 * @return TeamMemberInGroup
 	 */
 	public function GetByIndex($i){
 		return parent::GetByIndex($i);
@@ -124,7 +135,7 @@ class TeamMemberInGroupList extends AbricosList {
 	/**
 	 * Проверка существование пользователя в группе
 	 * @param integer $userid
-	 * @return MemberInGroup
+	 * @return TeamMemberInGroup
 	 */
 	public function GetByMemberId($memberid){
 		for ($i=0;$i<$this->Count();$i++){

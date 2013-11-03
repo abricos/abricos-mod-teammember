@@ -17,13 +17,13 @@ Component.entryPoint = function(NS){
 
 	var buildTemplate = this.buildTemplate;
 	
-	var MemberGroupSelectWidget = function(container, team, value){
-		this.init(container, team, value);
+	var GroupSelectWidget = function(container, taData, value){
+		this.init(container, taData, value);
 	};
-	MemberGroupSelectWidget.prototype = {
-		init: function(container, team, value){
+	GroupSelectWidget.prototype = {
+		init: function(container, taData, value){
 			this.container = container;
-			this.team = team;
+			this.taData = taData;
 			this._value = value;
 			
 			buildTemplate(this, 'select,option');
@@ -40,7 +40,7 @@ Component.entryPoint = function(NS){
 			var TM = this._TM, value = this._value;
 
 			var lst = "";
-			this.team.memberGroupList.foreach(function(group){
+			this.taData.groupList.foreach(function(group){
 				lst += TM.replace('option',{
 					'id': group.id,
 					'tl': group.title
@@ -51,20 +51,23 @@ Component.entryPoint = function(NS){
 			this.setValue(value);
 		}		
 	};
-	NS.MemberGroupSelectWidget = MemberGroupSelectWidget;
+	NS.GroupSelectWidget = GroupSelectWidget;
 	
-	var MemberGroupEditorWidget = function(container, team, group, callback){
-		MemberGroupEditorWidget.superclass.constructor.call(this, container, {
+	var GroupEditorWidget = function(container, taData, group, cfg){
+		cfg = L.merge({
+			'callback': null
+		}, cfg || {});
+		GroupEditorWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'widget' 
-		}, team, group, callback);
+		}, taData, group, cfg);
 	};
-	YAHOO.extend(MemberGroupEditorWidget, Brick.mod.widget.Widget, {
-		init: function(team, group, callback){
-			this.team = team;
+	YAHOO.extend(GroupEditorWidget, Brick.mod.widget.Widget, {
+		init: function(taData, group, cfg){
+			this.taData = taData;
 			this.group = group;
-			this.callback = callback;
+			this.cfg = cfg;
 		},
-		buildTData: function(team, group){
+		buildTData: function(taData, group, cfg){
 			return {'cledst':group.id==0?'edstnew':'edstedit'};
 		},
 		onClick: function(el, tp){
@@ -84,45 +87,45 @@ Component.entryPoint = function(NS){
 			this.gel('title').value = this.group.title;
 		},
 		cancel: function(){
-			NS.life(this.callback, 'cancel');
+			NS.life(this.cfg['callback'], 'cancel');
 		},
 		save: function(){
-			var __self = this, team = this.team, group = this.group;
+			var __self = this, taData = this.taData, group = this.group;
 			var sd = {
 				'id': group.id,
-				'teamid': team.id,
+				'teamid': taData.team.id,
 				'tl': this.gel('title').value
 			};
 			
-			team.manager.memberGroupSave(team, sd, function(group){
-				NS.life(__self.callback, 'save', group);
+			taData.manager.groupSave(taData, sd, function(group){
+				NS.life(__self.cfg['callback'], 'save', group);
 			});
 		}		
 	});
-	NS.MemberGroupEditorWidget = MemberGroupEditorWidget;	
+	NS.GroupEditorWidget = GroupEditorWidget;	
 	
-	var MemberGroupEditorPanel = function(team, group, callback){
-		this.team = team;
+	var GroupEditorPanel = function(taData, group, callback){
+		this.taData = taData;
 		this.group = group;
 		this.callback = callback;
 
-		MemberGroupEditorPanel.superclass.constructor.call(this, {
+		GroupEditorPanel.superclass.constructor.call(this, {
 			'width': '700px'
 		});
 	};
-	YAHOO.extend(MemberGroupEditorPanel, Brick.widget.Dialog, {
+	YAHOO.extend(GroupEditorPanel, Brick.widget.Dialog, {
 		initTemplate: function(){
 			return buildTemplate(this, 'panel').replace('panel');
 		},
 		onLoad: function(){
 			var __self = this;
-			this.widget = new MemberGroupEditorWidget(this._TM.getEl('panel.widget'), this.team, this.group, function(act, group){
+			this.widget = new GroupEditorWidget(this._TM.getEl('panel.widget'), this.taData, this.group, function(act, group){
 				__self.close();
 				NS.life(__self.callback, act, group);
 			});
 		}
 	});
-    NS.MemberGroupEditorPanel = MemberGroupEditorPanel;
+    NS.GroupEditorPanel = GroupEditorPanel;
 
 
 };

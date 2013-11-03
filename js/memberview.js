@@ -78,8 +78,8 @@ Component.entryPoint = function(NS){
 
 			var cfg = this.cfg,
 				user = team.manager.users.get(member.id),
-				groupid = team.memberInGroupList.getMemberGroupId(member.id),
-				group = team.memberGroupList.get(groupid);
+				groupid = team.memberInGroupList.getGroupId(member.id),
+				group = team.groupList.get(groupid);
 			
 			this.elSetHTML({
 				'unm': user.getUserName(),

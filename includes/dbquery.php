@@ -14,12 +14,12 @@ class TeamMemberQuery {
 	 * @param integer $teamid
 	 * @param boolean $isAdmin
 	 */
-	public static function MemberList(TeamManager $man, Team $team, $memberid = 0){
+	public static function MemberList(TeamMemberManager $man, Team $team, $memberid = 0){
 		$db = $man->db;
 		$flds = "";
 		$ljoin = "";
 		
-		foreach($man->fldExtTeamUserRole as $key => $value){
+		foreach($man->fldExtMember as $key => $value){
 			$ljoin .= "
 				LEFT JOIN ".$db->prefix.$key." ".$key." ON ur.teamid=".$key.".teamid
 					AND ".$key.".userid=ur.userid
@@ -31,77 +31,56 @@ class TeamMemberQuery {
 			}
 		}
 		
-		$arr = array();
-		
-		// этот пользователь в этом списке
-		array_push($arr, "
-			SELECT
-				ur.userid as id,
-				ur.ismember,
-				ur.isadmin,
-				ur.isjoinrequest,
-				ur.isinvite,
-				ur.reluserid,
-				u.isvirtual
-				".$flds."
-			FROM ".$db->prefix."team_userrole ur
-			INNER JOIN ".$db->prefix."user u ON u.userid=ur.userid
-				".$ljoin."
-			WHERE ur.userid=".bkint(Abricos::$user->id)." AND ur.teamid=".bkint($team->id)."
-				AND (ur.ismember=1 OR ur.isjoinrequest=1 OR ur.isinvite=1) AND ur.isremove=0
-			LIMIT 1
-		");
-		
-		if ($team->role->IsAdmin()){
-			// список пользователей которых пригласили или сделали запрос на 
-			// вступление в группу
-			// список доступен только админу группы
-			array_push($arr, "
-				SELECT 
-					ur.userid as id,
-					ur.ismember,
-					ur.isadmin,
-					ur.isjoinrequest,
-					ur.isinvite,
-					ur.reluserid,
-					u.isvirtual
-					".$flds."
-				FROM ".$db->prefix."team_userrole ur
-				INNER JOIN ".$db->prefix."user u ON u.userid=ur.userid
-					".$ljoin."
-				WHERE ur.userid<>".bkint(Abricos::$user->id)." AND ur.teamid=".bkint($team->id)." 
-					AND ur.ismember=0 AND (ur.isjoinrequest=1 OR ur.isinvite=1) AND ur.isremove=0
-			");
-		}
-		
-		// публичный список пользователей
-		array_push($arr, "
-			SELECT
-				ur.userid as id,
-				ur.ismember,
-				ur.isadmin,
-				ur.isjoinrequest,
-				ur.isinvite,
-				ur.reluserid,
-				u.isvirtual
-				".$flds."
-			FROM ".$db->prefix."team_userrole ur
-			INNER JOIN ".$db->prefix."user u ON u.userid=ur.userid
-				".$ljoin."
-			WHERE ur.userid<>".bkint(Abricos::$user->id)." AND ur.teamid=".bkint($team->id)." 
-				AND ur.ismember=1 
-		");
-		
 		$sql = "
-			SELECT 
-				DISTINCT *
-			FROM (
-				".implode(" UNION ", $arr)."
-			) urm
+			SELECT
+				m.teammemberid as id,
+				m.teamid as tid,
+				m.userid as uid,
+				m.module as m,
+				ur.ismember,
+				ur.isadmin,
+				ur.isjoinrequest,
+				ur.isinvite,
+				ur.reluserid,
+				u.isvirtual
+				".$flds."
+			FROM ".$db->prefix."teammember m
+			INNER JOIN ".$db->prefix."user u ON m.userid=u.userid
+			INNER JOIN ".$db->prefix."team_userrole ur 
+				ON m.teamid=ur.teamid AND m.userid=ur.userid
+			".$ljoin."
+			WHERE m.module='".bkstr($man->moduleName)."'
+				AND m.teamid=".bkint($team->id)." 
+				AND m.deldate=0
+				AND ur.isremove=0
 		";
+		if ($team->role->IsAdmin()){
+			// админу доступен весь список
+		}else if ($team->role->IsMember()){
+			// участнику сообщества доступны только участники
+			$sql .= "
+				AND ur.ismember=1
+			";
+		}else if ($man->userid > 0){
+			// не участнику в список добавить самого участника, возможно он находится
+			// в статусе ожидающего подверждения вступления в сообщество
+			$sql .= "
+				AND (
+					ur.ismember=1
+					OR
+					(ur.ismember=0 AND ur.userid=".bkint($man->userid)." AND (ur.isjoinrequest=1 OR ur.isinvite=1))
+				)			
+			";	
+		}else{
+			// всем остальным доступны только участники
+			$sql .= "
+				AND ur.ismember=1 
+			";
+		}
+
 		if ($memberid > 0){
 			$sql .= "
-				WHERE urm.id=".bkint($memberid)."
+				AND m.userid=".bkint($memberid)."
 				LIMIT 1
 			";
 		}
@@ -109,7 +88,7 @@ class TeamMemberQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function Member(TeamManager $man, $team, $memberid){
+	public static function Member(TeamMemberManager $man, $team, $memberid){
 		$rows = TeamMemberQuery::MemberList($man, $team, $memberid);
 		return $man->db->fetch_array($rows);
 	}
@@ -119,8 +98,8 @@ class TeamMemberQuery {
 			SELECT 
 				mg.groupid as gid,
 				mg.userid as uid
-			FROM ".$db->prefix."team_membergroup g
-			INNER JOIN ".$db->prefix."team_memberingroup mg ON g.groupid=mg.groupid
+			FROM ".$db->prefix."teammember_group g
+			INNER JOIN ".$db->prefix."teammember_ingroup mg ON g.groupid=mg.groupid
 			WHERE g.teamid=".bkint($teamid)." AND g.module='".bkstr($moduleName)."' AND g.deldate=0
 		";
 		return $db->query_write($sql);
@@ -128,7 +107,7 @@ class TeamMemberQuery {
 	
 	public static function MemberAddToGroup(Ab_Database $db, $groupid, $memberid){
 		$sql = "
-			INSERT IGNORE INTO ".$db->prefix."team_memberingroup (groupid, userid, dateline) VALUES (
+			INSERT IGNORE INTO ".$db->prefix."teammember_ingroup (groupid, userid, dateline) VALUES (
 				".bkint($groupid).",
 				".bkint($memberid).",
 				".TIMENOW."
@@ -139,7 +118,7 @@ class TeamMemberQuery {
 	
 	public static function MemberRemoveFromGroup(Ab_Database $db, $groupid, $memberid){
 		$sql = "
-			DELETE FROM ".$db->prefix."team_memberingroup 
+			DELETE FROM ".$db->prefix."teammember_ingroup 
 			WHERE groupid=".bkint($groupid)." AND userid=".bkint($memberid)."
 		";
 		$db->query_write($sql);
@@ -151,7 +130,7 @@ class TeamMemberQuery {
 				g.groupid as id,
 				g.parentgroupid as pid,
 				g.title as tl
-			FROM ".$db->prefix."team_membergroup g
+			FROM ".$db->prefix."teammember_group g
 			WHERE g.teamid=".bkint($teamid)." AND g.module='".bkstr($moduleName)."' AND g.deldate=0
 		";
 		return $db->query_read($sql);
@@ -159,7 +138,7 @@ class TeamMemberQuery {
 
 	public static function MemberGroupAppend(Ab_Database $db, $teamid, $moduleName, $d){
 		$sql = "
-			INSERT INTO ".$db->prefix."team_membergroup (teamid, module, title, dateline) VALUES (
+			INSERT INTO ".$db->prefix."teammember_group (teamid, module, title, dateline) VALUES (
 				".bkint($teamid).",
 				'".$moduleName."',
 				'".$d->tl."',
@@ -172,7 +151,7 @@ class TeamMemberQuery {
 	
 	public static function MemberGroupUpdate(Ab_Database $db, $teamid, $moduleName, $memberGroupId, $d){
 		$sql = "
-			UPDATE ".$db->prefix."team_membergroup
+			UPDATE ".$db->prefix."teammember_group
 			SET title='".$d->tl."',
 				upddate=".TIMENOW."
 			WHERE teamid=".bkint($teamid)." AND module='".bkstr($moduleName)."' AND groupid=".bkint($memberGroupId)."
@@ -181,27 +160,6 @@ class TeamMemberQuery {
 		$db->query_write($sql);
 	}
 	
-	/**
-	 * Пользователь userid просматривает группу teamid
-	 * 
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function UserTeamView(Ab_Database $db, $teamid){
-		$sql = "
-			INSERT INTO ".$db->prefix."team_userrole
-			(teamid, userid, lastview, dateline, upddate) VALUES (
-				".bkint($teamid).",
-				".bkint(Abricos::$user->id).",
-				".TIMENOW.",
-				".TIMENOW.",
-				".TIMENOW."
-			) ON DUPLICATE KEY UPDATE
-				lastview=".TIMENOW."
-		";
-		$db->query_write($sql);
-	}
 
 	/**
 	 * Админ группы отправил приглашение на вступление пользователю userid
@@ -323,27 +281,6 @@ class TeamMemberQuery {
 		$db->query_write($sql);
 	}
 
-	/**
-	 * Пользователь userid стал членом группы teamid
-	 * 
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function UserSetMember(Ab_Database $db, $teamid, $userid){
-		$sql = "
-			INSERT INTO ".$db->prefix."team_userrole
-			(teamid, userid, ismember, dateline, upddate) VALUES (
-				".bkint($teamid).",
-				".bkint($userid).",
-				1,
-				".TIMENOW.",
-				".TIMENOW."
-			) ON DUPLICATE KEY UPDATE
-				ismember=1
-		";
-		$db->query_write($sql);
-	}
 	
 	public static function UserByEmail(Ab_Database $db, $email){
 		$sql = "
@@ -360,27 +297,6 @@ class TeamMemberQuery {
 		return $db->query_first($sql);
 	}
 
-	public static function UserByIds(Ab_Database $db, $ids){
-		if (count($ids) == 0){ return; }
-		
-		$wh = array();
-		for ($i=0; $i<count($ids); $i++){
-			array_push($wh, "u.userid=".bkint($ids[$i]));
-		}
-		$sql = "
-			SELECT
-				u.userid as id,
-				u.avatar as avt,
-				u.username as unm,
-				u.firstname as fnm,
-				u.lastname as lnm,
-				u.isvirtual as vrt
-			FROM ".$db->prefix."user u
-			WHERE ".implode(" OR ", $wh)."
-		";
-		return $db->query_read($sql);
-	}
-	
 	public static function MyNameUpdate(Ab_Database $db, $userid, $d){
 		$sql = "
 			UPDATE ".$db->prefix."user
