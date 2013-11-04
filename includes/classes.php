@@ -30,7 +30,7 @@ class TeamMemberInitData extends TeamAppInitData {
 		
 		$ret->iwCount = $this->inviteWaitCount;
 		$ret->iwLimit = $this->inviteWaitLimit;
-		
+
 		return $ret;
 	}
 }

@@ -241,12 +241,28 @@ Component.entryPoint = function(NS){
 	};
 	NS.Navigator = Navigator;
 		
+	var InitData = function(manager, d){
+		d = L.merge({
+			'iwCount': 0,
+			'iwLimit': 0
+		}, d || {});
+		InitData.superclass.constructor.call(this, manager, d);
+	};
+	YAHOO.extend(InitData, NSTM.TeamAppInitData, {
+		update: function(d){
+			this.inviteWaitCount = d['iwCount']|0;
+			this.inviteWaitLimit = d['iwLimit']|0;
+		}
+	});
+	NS.InitData = InitData;
+	
 	var MemberManager = function(modname, callback, cfg){
 		cfg = L.merge({
 			'TeamExtendedDataClass':TeamExtendedData,
 			'MemberClass':			Member,
 			'MemberDetailClass':	MemberDetail,
-			'NavigatorClass':		Navigator
+			'NavigatorClass':		Navigator,
+			'InitDataClass':		InitData
 		}, cfg || {});
 		
 		// специализированный виджеты в перегруженном модуле
@@ -346,7 +362,6 @@ Component.entryPoint = function(NS){
 				NS.life(callback);
 			});
 		},
-		
 		groupSave: function(taData, sd, callback){
 			this.ajax({
 				'do': 'groupsave',
@@ -361,7 +376,6 @@ Component.entryPoint = function(NS){
 				NS.life(callback, group);
 			});
 		},
-
 		groupRemove: function(team, groupid, callback){
 			var __self = this;
 			this.ajax({
@@ -372,10 +386,26 @@ Component.entryPoint = function(NS){
 				__self._updateGroupList(team, d);
 				NS.life(callback);
 			});
+		},
+		globalMemberListLoad: function(team, callback){
+			this.ajax({
+				'do': 'globamemberlist',
+				'teamid': team.id
+			}, function(d){
+				
+				var memberList = new NS.MemberList();
+				
+				if (L.isValue(d) && L.isValue(d['members']) && L.isArray(d['members']['list'])){
+					var dList = d['members']['list'];
+					for (var i=0; i<dList.length; i++){
+						var member = new NS.Member(dList[i]);
+						member.setTeam(team);
+						memberList.add(member);
+					}
+				}
+				NS.life(callback, memberList);
+			});
 		}
-
-		
-		
 	});
 	NS.MemberManager = MemberManager;
 	

@@ -26,6 +26,7 @@ class TeamMemberManager extends TeamAppManager {
 		parent::__construct($mman, $appName);
 		
 		$this->TeamAppNavigatorClass	= TeamMemberNavigator;
+		$this->TeamAppInitDataClass		= TeamMemberInitData;
 	}
 	
 	public function IsAdminRole(){ return $this->modManager->IsAdminRole(); }
@@ -84,15 +85,11 @@ class TeamMemberManager extends TeamAppManager {
 	public function InitData(){
 		$initData = parent::InitData();
 		
-		if (false){
-			$initData = new TeamMemberInitData($this);
-		}
-		
 		if ($this->userid > 0){
 			$initData->inviteWaitLimit = $this->IsAdminRole() ? -1 : 5;
 			$initData->inviteWaitCount = TeamMemberQuery::MemberInviteWaitCountByUser($this->db, $this->userid);
 		}
-		
+
 		return $initData;
 	}
 	
@@ -196,6 +193,13 @@ class TeamMemberManager extends TeamAppManager {
 		$ret->members = $list->ToAJAX();
 	
 		return $ret;
+	}
+	
+	public function MemberListGlobalToAJAX($teamid){
+		$team = $this->Team($teamid);
+		
+		if (empty($team) || !$team->role->IsAdmin()){ return null; }
+		
 	}
 	
 	public function MemberSave($teamid, $d){

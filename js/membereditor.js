@@ -365,19 +365,19 @@ Component.entryPoint = function(NS){
 			this._isProcess = false;
 		},
 		availableInvite: function(){
-			var ucfg  = this.team.manager.userConfig;
+			var ucfg  = this.taData.manager.initData;
 			if (ucfg['inviteWaitLimit'] == -1){
 				return 999;
 			}
 			return ucfg['inviteWaitLimit'] - ucfg['inviteWaitCount'];
 		},
-		buildTData: function(team, cfg){
+		buildTData: function(taData, cfg){
 			return {
 				'invcnt': this.availableInvite(),
-				'waitcnt':  this.team.manager.userConfig['inviteWaitCount']
+				'waitcnt':  taData.manager.initData['inviteWaitCount']
 			};
 		},
-		onLoad: function(team, cfg){
+		onLoad: function(taData, cfg){
 			var __self = this;
 			E.on(this.gel('email'), 'keyup', function(e){
 				__self.emailValidate();
@@ -461,6 +461,61 @@ Component.entryPoint = function(NS){
 		}
 	});
 	NS.MemberInviteWidget = MemberInviteWidget;
+	
+	var UserFindByEmail = function(startCallback, finishCallback){
+		this.init(startCallback, finishCallback);
+	};
+	UserFindByEmail.prototype = {
+		init: function(startCallback, finishCallback){
+			this.startCallback = startCallback;
+			this.finishCallback = finishCallback;
+
+			this._checkUserCache = {};
+		},
+		find: function(eml){
+			if (!NS.emailValidate(eml)){
+				return false;
+			}
+			this._findMethod(eml);
+			return true;
+		},
+		_findMethod: function(eml){
+			var chk = this._checkUserCache;
+			if (chk[eml] && chk[eml]['isprocess']){
+				// этот емайл сейчас уже находится в запросе
+				return; 
+			}
+			
+			NS.life(this.startCallback, eml);
+
+			if (chk[eml] && chk[eml]['result']){
+				NS.life(this.finishCallback, eml);
+				return;
+			}
+			chk[eml] = { 'isprocess': true };
+
+			var __self = this;
+
+			Brick.ajax('{C#MODNAME}', {
+				'data': {
+					'do': 'userfindbyemail',
+					'email': eml
+				},
+				'event': function(request){
+					var d = request.data,
+						user = null;
+					if (!L.isNull(d)){
+						eml = d['email'];
+						user = d['user'];
+					}
+					chk[eml]['isprocess'] = false;
+					chk[eml]['result'] = user;
+					NS.life(__self.finishCallback, eml, user);
+				}
+			});
+		}
+	};
+	NS.UserFindByEmail = UserFindByEmail;
 	
 	var MemberRemovePanel = function(team, member, callback){
 		this.team = team;
