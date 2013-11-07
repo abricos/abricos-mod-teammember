@@ -22,8 +22,6 @@ Component.entryPoint = function(NS){
 
 	this.buildTemplate({}, '');
 	
-	var _MBMODULENAMECACHE = {};
-	
 	// Данные сообщества
 	var TeamExtendedData = function(team, manager, d){
 		d = L.merge({
@@ -103,11 +101,17 @@ Component.entryPoint = function(NS){
 	
 
 	var Member = function(d){
+		Brick.console(d);
 		d = L.merge({
 			'm': '',
 			'tid': 0,
-			'uid': 0
+			'uid': 0,
+			'role': { }
 		}, d || {});
+		
+		d['role'] = L.merge({
+			'id': d['uid']
+		}, d['role'] || {});
 		
 		this.manager = MemberManager.get(d['m']);
 		
@@ -128,9 +132,13 @@ Component.entryPoint = function(NS){
 			this.teamid		= d['tid']|0;
 			this.userid		= d['uid']|0;
 			
+			this.role 		= new NSTM.TeamUserRole(d['role']);
+			
+			/*
 			if (this.id > 0){
 				_ETMODULENAMECACHE[this.id|0] = this.module;
 			}
+			/**/
 			
 			if (L.isValue(d['dtl'])){
 				this.detail = new this.manager.MemberDetailClass(d['dtl']);
@@ -299,6 +307,8 @@ Component.entryPoint = function(NS){
 			this._cacheMember = {};
 		},
 		
+		/*
+
 		_updateMember: function(team, d){
 			if (!(L.isValue(d) && L.isValue(d['member']))){
 				return null;
@@ -362,6 +372,7 @@ Component.entryPoint = function(NS){
 				NS.life(callback);
 			});
 		},
+		/**/
 		groupSave: function(taData, sd, callback){
 			this.ajax({
 				'do': 'groupsave',
@@ -377,6 +388,7 @@ Component.entryPoint = function(NS){
 			});
 		},
 		groupRemove: function(team, groupid, callback){
+			/*
 			var __self = this;
 			this.ajax({
 				'do': 'groupremove',
@@ -386,26 +398,9 @@ Component.entryPoint = function(NS){
 				__self._updateGroupList(team, d);
 				NS.life(callback);
 			});
-		},
-		globalMemberListLoad: function(team, callback){
-			this.ajax({
-				'do': 'globamemberlist',
-				'teamid': team.id
-			}, function(d){
-				
-				var memberList = new NS.MemberList();
-				
-				if (L.isValue(d) && L.isValue(d['members']) && L.isArray(d['members']['list'])){
-					var dList = d['members']['list'];
-					for (var i=0; i<dList.length; i++){
-						var member = new NS.Member(dList[i]);
-						member.setTeam(team);
-						memberList.add(member);
-					}
-				}
-				NS.life(callback, memberList);
-			});
+			/**/
 		}
+		
 	});
 	NS.MemberManager = MemberManager;
 	

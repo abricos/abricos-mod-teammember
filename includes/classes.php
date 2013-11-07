@@ -69,7 +69,7 @@ class TeamMember extends AbricosItem {
 		$ret->uid	= $this->userid;
 		$ret->m		= $this->module;
 
-		// $ret->role = $this->role->ToAJAX();
+		$ret->role = $this->role->ToAJAX();
 		
 		if (!empty($this->detail)){
 			$ret->dtl = $this->detail->ToAJAX();

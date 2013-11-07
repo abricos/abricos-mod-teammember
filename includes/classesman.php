@@ -61,7 +61,9 @@ class TeamMemberManager extends TeamAppManager {
 			case 'memberlist': 	return $this->MemberListToAJAX($d->teamid);
 			case 'membersave': 	return $this->MemberSaveToAJAX($d->teamid, $d->savedata);
 			case 'memberremove':return $this->MemberRemove($d->teamid, $d->memberid);
-			
+
+			case 'memberlistglobal': return $this->MemberListGlobalToAJAX($d->teamid);
+				
 			case 'grouplist':	return $this->GroupListToAJAX($d->teamid);
 			case 'groupsave': return $this->GroupSaveToAJAX($d->teamid, $d->savedata);
 			case 'groupremove': return $this->GroupRemoveToAJAX($d->teamid, $d->groupid);
@@ -71,15 +73,6 @@ class TeamMemberManager extends TeamAppManager {
 			case 'mynamesave': return $this->MyNameSave($d);
 		}
 		return parent::AJAXMethod($d);
-	}
-	
-	/**
-	 * @param integer $teamid
-	 * @return Team
-	 */
-	public function Team($teamid){
-		Abricos::GetModule('team')->GetManager();
-		return TeamModuleManager::$instance->Team($teamid);
 	}
 	
 	public function InitData(){
@@ -106,6 +99,19 @@ class TeamMemberManager extends TeamAppManager {
 		$ret->ingroups = $obj->ingroups;
 		
 		return $ret;
+	}
+	
+	public function RelatedModuleList($teamid){
+		$team = $this->Team($teamid);
+		
+		if (empty($team)){ return null; }
+		
+		$list = array();
+		while (($d = $this->db->fetch_array($rows))){
+			if ($d['m'] == $this->moduleName){ continue; }
+			array_push($list, $d['m']);
+		}
+		return $list;
 	}
 	
 	/**
@@ -174,9 +180,10 @@ class TeamMemberManager extends TeamAppManager {
 		$list = $this->NewMemberList();
 		while (($d = $this->db->fetch_array($rows))){
 			$member = $this->NewMember($d);
+			$member->role = $team->Manager()->NewTeamUserRole($team, $member->userid, $d);
 			$list->Add($member);
 				
-			TeamUserManager::AddId($member->id);
+			TeamUserManager::AddId($member->userid);
 		}
 		$this->CacheAdd($cacheName, $teamid, $list);
 	
@@ -193,6 +200,37 @@ class TeamMemberManager extends TeamAppManager {
 		$ret->members = $list->ToAJAX();
 	
 		return $ret;
+	}
+	
+	public function MemberListGlobal($teamid){
+		$team = $this->Team($teamid);
+		
+		if (empty($team) || !$team->role->IsAdmin()){ return null; }
+		
+		$cacheName = "globalmemberlist";
+		
+		if ($clearCache){
+			$this->CacheClear($cacheName, $teamid);
+		}
+		
+		$list = $this->Cache($cacheName, $teamid);
+		
+		if (!empty($list)){
+			return $list;
+		}
+		
+		$rows = TeamMemberQuery::MemberListGlobal($this, $team);
+		$list = new TeamMemberList();
+		while (($d = $this->db->fetch_array($rows))){
+			$member = new TeamMember($d);
+			$member->role = $team->Manager()->NewTeamUserRole($team, $member->userid, $d);
+			$list->Add($member);
+		
+			TeamUserManager::AddId($member->userid);
+		}
+		$this->CacheAdd($cacheName, $teamid, $list);
+		
+		return $list;		
 	}
 	
 	public function MemberListGlobalToAJAX($teamid){
@@ -629,6 +667,16 @@ class TeamMemberManager extends TeamAppManager {
 	
 		return $ret;
 	}
+	
+	public function MyNameSave($d){
+		$utmf = Abricos::TextParser(true);
+		$d->firstname = $utmf->Parser($d->firstname);
+		$d->lastname = $utmf->Parser($d->lastname);
+	
+		TeamMemberQuery::MyNameUpdate($this->db, $this->userid, $d);
+	
+		return $d;
+	}	
 		
 
 }

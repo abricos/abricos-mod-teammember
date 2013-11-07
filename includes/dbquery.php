@@ -92,6 +92,19 @@ class TeamMemberQuery {
 		$rows = TeamMemberQuery::MemberList($man, $team, $memberid);
 		return $man->db->fetch_array($rows);
 	}
+
+	
+	public static function RelatedModuleList(Ab_Database $db, $teamid){
+		$sql = "
+			SELECT
+				DISTINCT
+				m.module as m
+			FROM ".$db->prefix."teammember m
+			WHERE m.teamid=".bkint($team->id)."
+		";
+		
+		return $db->query_read($sql);		
+	}
 	
 	public static function MemberInGroupList(Ab_Database $db, $teamid, $moduleName){
 		$sql = "
