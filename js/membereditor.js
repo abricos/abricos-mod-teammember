@@ -255,7 +255,7 @@ Component.entryPoint = function(NS){
 		getSaveData: function(){
 			return sd = {
 				'id': this.member.id,
-				'teamid': this.team.id,
+				'teamid': this.taData.team.id,
 				'groupid': this.groupSelectWidget.getValue(),
 				'vrt': this._isVirtual ? 1 : 0,
 				'fnm': this.gel('userfname').value,

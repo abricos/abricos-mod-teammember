@@ -43,6 +43,7 @@ class TeamMemberModuleManager extends Ab_ModuleManager {
 	
 	public function AJAX($d){
 		switch($d->do){
+			case 'userfindbyemail': return $this->UserFindByEmail($d->email);
 			case 'membermodulename': return $this->MemberModuleName($d->teamid, $d->memberid);
 		}
 		return null;
@@ -54,7 +55,35 @@ class TeamMemberModuleManager extends Ab_ModuleManager {
 		return TeamMemberQuery::MemberModuleName($this->db, $memberid);
 	}
 	
-
+	/**
+	 * Поиск пользователя по email
+	 */
+	public function UserFindByEmail($email){
+		
+		$ret = new stdClass();
+		$ret->email = $email;
+		$ret->user = null;
+	
+		if (!$this->IsWriteRole()){
+			sleep(5);
+			return $ret;
+		}
+		if (!$this->IsAdminRole()){
+			sleep(1);
+		}
+	
+		if (!Abricos::$user->GetManager()->EmailValidate($email)){
+			return $ret;
+		}
+	
+		$user = TeamMemberQuery::UserByEmail($this->db, $email);
+		if (!empty($user)){
+			$ret->user = $user;
+		}
+	
+		return $ret;
+	}
+	
 }
 
 ?>

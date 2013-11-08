@@ -88,6 +88,7 @@ class TeamMemberManager extends TeamAppManager {
 	
 	public function TeamExtendedDataToAJAX($teamid){
 		$ret = parent::TeamExtendedDataToAJAX($teamid);
+		if (empty($ret)){ return null; }
 		
 		$obj = $this->MemberListToAJAX($teamid);
 		$ret->members = $obj->members;
