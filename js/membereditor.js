@@ -290,7 +290,8 @@ Component.entryPoint = function(NS){
 
 			var __self = this;
 			
-			this.team.manager.memberSave(this.team, sd, function(member){
+			var taData = this.taData;
+			taData.manager.memberSave(taData, sd, function(member){
 				__self.elShow('btns');
 				__self.elHide('bloading');
 				NS.life(__self.cfg['callback'], 'save', member);

@@ -75,12 +75,20 @@ class TeamMemberManager extends TeamAppManager {
 		return parent::AJAXMethod($d);
 	}
 	
+	/**
+	 * @return TeamMemberNavigator
+	 * @see TeamAppManager::Navigator()
+	 */
+	public function Navigator($isURL = false){
+		return parent::Navigator($isURL);
+	}
+	
 	public function InitData(){
 		$initData = parent::InitData();
 		
 		if ($this->userid > 0){
 			$initData->inviteWaitLimit = $this->IsAdminRole() ? -1 : 5;
-			$initData->inviteWaitCount = TeamMemberQuery::MemberInviteWaitCountByUser($this->db, $this->userid);
+			$initData->inviteWaitCount = TeamQuery::MemberInviteWaitCountByUser($this->db, $this->userid);
 		}
 
 		return $initData;
@@ -243,10 +251,12 @@ class TeamMemberManager extends TeamAppManager {
 	
 	public function MemberSave($teamid, $d){
 		$team = $this->Team($teamid);
-	
-		if (!$team->role->IsAdmin()){ // текущий пользователь не админ => нет прав
+		if (empty($team) || !$team->role->IsAdmin()){ // текущий пользователь не админ => нет прав
 			return null;
 		}
+		Abricos::GetModule('teammember')->GetManager();
+		$initData = $this->InitData();
+		
 		$d->id = intval($d->id);
 	
 		if ($d->id == 0){ // Добавление участника
@@ -267,8 +277,7 @@ class TeamMemberManager extends TeamAppManager {
 				if (!Abricos::$user->GetManager()->EmailValidate($d->email)){
 					return null;
 				}
-				Abricos::GetModule('team')->GetManager();
-				$rd = TeamModuleManager::$instance->UserFindByEmail($d->email);
+				$rd = TeamMemberModuleManager::$instance->UserFindByEmail($d->email);
 	
 				if (empty($rd)){
 					return null;
@@ -283,10 +292,9 @@ class TeamMemberManager extends TeamAppManager {
 					$d->id = $rd->user['id'];
 				}else{
 					// есть ли лимит на кол-во приглашений
-					$ucfg = $this->UserConfig();
 	
-					if ($ucfg->inviteWaitLimit > -1 &&
-							($ucfg->inviteWaitLimit - $ucfg->inviteWaitCount) < 1){
+					if ($initData->inviteWaitLimit > -1 &&
+							($initData->inviteWaitLimit - $initData->inviteWaitCount) < 1){
 						// нужно подтвердить других участников, чтобы иметь возможность добавить еще
 						return null;
 					}
@@ -333,13 +341,13 @@ class TeamMemberManager extends TeamAppManager {
 		// сохранение группы пользователя
 		$groupid = intval($d->groupid);
 	
-		$mgList = $this->MemberGroupList($teamid);
-		$mg = $mgList->Get($groupid);
-		if (empty($mg)){
+		$groupList = $this->GroupList($teamid);
+		$group = $groupList->Get($groupid);
+		if (empty($group)){
 			$groupid = 0;
 		}
 	
-		$migList = $this->MemberInGroupList($teamid);
+		$migList = $this->InGroupList($teamid);
 		$mig = $migList->GetByMemberId($memberid);
 		$curgroupid = empty($mig) ? 0 : $mig->groupid;
 	
@@ -403,11 +411,11 @@ class TeamMemberManager extends TeamAppManager {
 		if ($invite->error == 0){
 			if ($isVirtual){
 				// виртуальному пользователю сразу ставим статус подвержденного свою учетку
-				TeamMemberQuery::UserSetMember($this->db, $team->id, $invite->user['id']);
+				TeamQuery::UserSetMember($this->db, $team->id, $invite->user['id']);
 			}else{
 				// пометка пользователя флагом приглашенного
 				// (система ожидает подтверждение от пользователя)
-				TeamMemberQuery::MemberInviteSetWait($this->db, $team->id, $invite->user['id'], $this->userid);
+				TeamQuery::MemberInviteSetWait($this->db, $team->id, $invite->user['id'], $this->userid);
 			}
 		}
 	
@@ -418,24 +426,24 @@ class TeamMemberManager extends TeamAppManager {
 	 * Отправка приглашения новому участнику
 	 *
 	 * @param Team $team
-	 * @param unknown_type $email
-	 * @param unknown_type $fname
-	 * @param unknown_type $lname
-	 * @param unknown_type $invite
+	 * @param string $email
+	 * @param string $fname
+	 * @param string $lname
+	 * @param object $invite
 	 */
 	protected function MemberNewInviteSendMail(Team $team, $email, $fname, $lname, $invite){
 		$inu = $invite->user;
-	
+		
 		$repd = array(
-				"author" => TeamUserManager::Get($this->userid)->UserNameBuild(),
-				"teamtitle" => $team->title,
-				"username" => $fname." ".$lname,
-				"inviteurl" =>  $invite->URL."/".$this->Navigator()->MemberView($team->id, $inu['id'], $this->moduleName),
-				"login" => $inu['login'],
-				"password" => $inu['password'],
-				"email" => $email,
-				"teamurl" => $this->Navigator(true)->TeamView($team->id),
-				"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+			"author" => TeamUserManager::Get($this->userid)->UserNameBuild(),
+			"teamtitle" => $team->title,
+			"username" => $fname." ".$lname,
+			"inviteurl" =>  $invite->URL."/".$this->Navigator()->MemberView($team, $inu['id'], $this->moduleName),
+			"login" => $inu['login'],
+			"password" => $inu['password'],
+			"email" => $email,
+			"teamurl" => $this->Navigator(true)->TeamView($team),
+			"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 		);
 	
 		$brick = Brick::$builder->LoadBrickS($this->moduleName, 'templates', null, null);
@@ -467,7 +475,7 @@ class TeamMemberManager extends TeamAppManager {
 		}
 		// TODO: необходимо запрашивать разрешение на приглашение пользователя
 		// пометка пользователя флагом приглашенного
-		TeamMemberQuery::MemberInviteSetWait($this->db, $team->id, $userid, $this->userid);
+		TeamQuery::MemberInviteSetWait($this->db, $team->id, $userid, $this->userid);
 	
 		return $userid;
 	}
@@ -481,17 +489,18 @@ class TeamMemberManager extends TeamAppManager {
 	protected function MemberInviteSendMail(Team $team, $userid){
 	
 		$userEml = UserQueryExt::User($this->db, $userid);
-	
-		$host = $_SERVER['HTTP_HOST'] ? $_SERVER['HTTP_HOST'] : $_ENV['HTTP_HOST'];
+		
+		$nav = $this->Navigator(true);
 	
 		$repd = array(
-				"author" => TeamUserManager::Get($this->userid)->UserNameBuild(),
-				"teamtitle" => $team->title,
-				"username" => TeamUserManager::Get($userid)->UserNameBuild(),
-				"inviteurl" => $this->Navigator(true)->MemberView($team->id, $userid, $this->moduleName),
-				"email" => $userEml['email'],
-				"teamurl" => $this->Navigator(true)->TeamView($team->id),
-				"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+			"author" => TeamUserManager::Get($this->userid)->UserNameBuild(),
+			"teamtitle" => $team->title,
+			"username" => TeamUserManager::Get($userid)->UserNameBuild(),
+			"inviteurl" => $nav->MemberView($team, $memberid),
+				// $this->Navigator(true)->MemberView($team->id, $userid, $this->moduleName),
+			"email" => $userEml['email'],
+			"teamurl" => $nav->TeamView($team),
+			"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
 		);
 	
 		$brick = Brick::$builder->LoadBrickS($this->moduleName, 'templates', null, null);
@@ -516,30 +525,30 @@ class TeamMemberManager extends TeamAppManager {
 	 * @param integer $memberid
 	 * @param boolean $flag TRUE-принять, FALSE-отказать
 	 */
-	public function MemberInviteAccept($teamid, $memberid, $flag){
-		$member = $this->Member($teamid, $memberid);
+	public function MemberInviteAccept($teamid, $userid, $flag){
+		$member = $this->Member($teamid, $userid);
 	
 		if (empty($member) || $member->id != $this->userid){
 			return null;
 		}
 	
 		if ($flag){
-			TeamMemberQuery::MemberInviteSetAccept($this->db, $teamid, $memberid);
+			TeamQuery::MemberInviteSetAccept($this->db, $teamid, $userid);
 		}else{
-			TeamMemberQuery::MemberInviteSetReject($this->db, $teamid, $memberid);
+			TeamQuery::MemberInviteSetReject($this->db, $teamid, $userid);
 		}
 	
 		$this->TeamMemberCountRecalc($teamid);
 	
 		$this->CacheClear($teamid);
 	
-		return $memberid;
+		return $userid;
 	}
 	
-	public function MemberInviteAcceptToAJAX($teamid, $memberid, $flag){
-		$memberid = $this->MemberInviteAccept($teamid, $memberid, $flag);
+	public function MemberInviteAcceptToAJAX($teamid, $userid, $flag){
+		$userid = $this->MemberInviteAccept($teamid, $userid, $flag);
 	
-		return $this->MemberToAJAX($teamid, $memberid);
+		return $this->MemberToAJAX($teamid, $userid);
 	}
 	
 	public function MemberRemove($teamid, $memberid){

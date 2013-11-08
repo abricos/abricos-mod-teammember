@@ -352,18 +352,6 @@ Component.entryPoint = function(NS){
 			});			
 		},
 		
-		memberSave: function(teamid, sd, callback){
-			var __self = this;
-			this.ajax({
-				'do': 'membersave',
-				'teamid': teamid,
-				'savedata': sd
-			}, function(d){
-				var member = __self._updateMember(d);
-				NS.life(callback, member);
-			});
-		},
-
 		memberRemove: function(team, memberid, callback){
 			this.ajax({
 				'do': 'memberremove',
@@ -374,6 +362,20 @@ Component.entryPoint = function(NS){
 			});
 		},
 		/**/
+		memberSave: function(taData, sd, callback){
+			this.ajax({
+				'do': 'membersave',
+				'teamid': taData.team.id,
+				'savedata': sd
+			}, function(d){
+				taData.update(d);
+				var member = null;
+				if (L.isValue(d)){
+					member = taData.memberList.get(d['memberid']);
+				}
+				NS.life(callback, member);
+			});
+		},
 		groupSave: function(taData, sd, callback){
 			this.ajax({
 				'do': 'groupsave',

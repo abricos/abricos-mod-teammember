@@ -10,7 +10,14 @@ require_once 'modules/team/includes/classes.php';
 require_once 'modules/team/includes/classesapp.php';
 require_once 'classesman.php';
 
-class TeamMemberNavigator extends TeamAppNavigator { }
+class TeamMemberNavigator extends TeamAppNavigator { 
+	
+	public function MemberView(Team $team, $userid){
+		$url = $this->URL($team);
+		return $url."u_".$userid;
+	}
+	
+}
 
 class TeamMemberInitData extends TeamAppInitData {
 	/**
@@ -58,9 +65,6 @@ class TeamMember extends AbricosItem {
 		$this->teamid = intval($d['tid']);
 		$this->userid = intval($d['uid']);
 		$this->module = strval($d['m']);
-		
-		// $this->role = $team->Manager()->NewTeamUserRole($team, $this->id, $d);
-		
 	}
 	
 	public function ToAJAX(){

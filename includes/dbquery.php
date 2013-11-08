@@ -14,7 +14,7 @@ class TeamMemberQuery {
 	 * @param integer $teamid
 	 * @param boolean $isAdmin
 	 */
-	public static function MemberList(TeamMemberManager $man, Team $team, $memberid = 0){
+	public static function MemberList(TeamMemberManager $man, Team $team, $userid = 0){
 		$db = $man->db;
 		$flds = "";
 		$ljoin = "";
@@ -78,9 +78,9 @@ class TeamMemberQuery {
 			";
 		}
 
-		if ($memberid > 0){
+		if ($userid > 0){
 			$sql .= "
-				AND m.userid=".bkint($memberid)."
+				AND m.userid=".bkint($userid)."
 				LIMIT 1
 			";
 		}
@@ -88,11 +88,10 @@ class TeamMemberQuery {
 		return $db->query_read($sql);
 	}
 	
-	public static function Member(TeamMemberManager $man, $team, $memberid){
-		$rows = TeamMemberQuery::MemberList($man, $team, $memberid);
+	public static function Member(TeamMemberManager $man, $team, $userid){
+		$rows = TeamMemberQuery::MemberList($man, $team, $userid);
 		return $man->db->fetch_array($rows);
 	}
-
 	
 	public static function RelatedModuleList(Ab_Database $db, $teamid){
 		$sql = "
@@ -118,21 +117,21 @@ class TeamMemberQuery {
 		return $db->query_write($sql);
 	}
 	
-	public static function MemberAddToGroup(Ab_Database $db, $groupid, $memberid){
+	public static function MemberAddToGroup(Ab_Database $db, $groupid, $userid){
 		$sql = "
 			INSERT IGNORE INTO ".$db->prefix."teammember_ingroup (groupid, userid, dateline) VALUES (
 				".bkint($groupid).",
-				".bkint($memberid).",
+				".bkint($userid).",
 				".TIMENOW."
 			)
 		";
 		$db->query_write($sql);
 	}
 	
-	public static function MemberRemoveFromGroup(Ab_Database $db, $groupid, $memberid){
+	public static function MemberRemoveFromGroup(Ab_Database $db, $groupid, $userid){
 		$sql = "
 			DELETE FROM ".$db->prefix."teammember_ingroup 
-			WHERE groupid=".bkint($groupid)." AND userid=".bkint($memberid)."
+			WHERE groupid=".bkint($groupid)." AND userid=".bkint($userid)."
 		";
 		$db->query_write($sql);
 	}
@@ -172,128 +171,6 @@ class TeamMemberQuery {
 		";
 		$db->query_write($sql);
 	}
-	
-
-	/**
-	 * Админ группы отправил приглашение на вступление пользователю userid
-	 *
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function MemberInviteSetWait(Ab_Database $db, $teamid, $userid, $adminid){
-		$sql = "
-			INSERT INTO ".$db->prefix."team_userrole
-			(teamid, userid, reluserid, isinvite, dateline, upddate) VALUES (
-				".bkint($teamid).",
-				".bkint($userid).",
-				".bkint($adminid).",
-				1,
-				".TIMENOW.",
-				".TIMENOW."
-			) ON DUPLICATE KEY UPDATE
-				reluserid=".bkint($adminid).",
-				isinvite=1
-		";
-		$db->query_write($sql);
-	}
-	
-	public static function MemberInviteWaitCountByTeam(Ab_Database $db, $teamid){
-		$sql = "
-			SELECT 
-				count(*) as cnt
-			FROM ".$db->prefix."team_userrole
-			WHERE teamid=".bkint($teamid)." AND ismember=0 AND isinvite=1
-		";
-		$row = $db->query_first($sql);
-		return intval($row['cnt']);
-	}
-	
-	public static function MemberInviteWaitCountByUser(Ab_Database $db, $userid){
-		$sql = "
-			SELECT 
-				count(*) as cnt
-			FROM ".$db->prefix."team_userrole
-			WHERE reluserid=".bkint($userid)." AND ismember=0 AND isinvite=1
-		";
-		$row = $db->query_first($sql);
-		return intval($row['cnt']);
-	}
-	
-	/**
-	 * Пользователь принял приглашение вступить в группу
-	 *
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function MemberInviteSetAccept(Ab_Database $db, $teamid, $userid){
-		$sql = "
-			UPDATE ".$db->prefix."team_userrole
-			SET 
-				isinvite=2,
-				ismember=1
-			WHERE teamid=".bkint($teamid)." AND userid=".bkint($userid)." 
-				AND ismember=0
-			LIMIT 1
-		";
-		$db->query_write($sql);
-	}
-
-	public static function MemberRemove(Ab_Database $db, $teamid, $userid){
-		$sql = "
-			UPDATE ".$db->prefix."team_userrole
-			SET
-				isremove=".(Abricos::$user->id == $userid ? 2 : 1).",
-				ismember=0
-			WHERE teamid=".bkint($teamid)." AND userid=".bkint($userid)."
-			LIMIT 1
-		";
-		$db->query_write($sql);
-	}
-	
-	/**
-	 * Пользователь отклонил приглашение вступить в группу
-	 * 
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function MemberInviteSetReject(Ab_Database $db, $teamid, $userid){
-		$sql = "
-			UPDATE ".$db->prefix."team_userrole
-			SET 
-				isinvite=3,
-				ismember=0
-			WHERE teamid=".bkint($teamid)." AND userid=".bkint($userid)." 
-				AND ismember=0
-			LIMIT 1
-		";
-		$db->query_write($sql);
-	}
-
-	/**
-	 * Пользователь userid сам запросил вступление в группу
-	 *  
-	 * @param Ab_Database $db
-	 * @param integer $teamid
-	 * @param integer $userid
-	 */
-	public static function MemeberJoinRequestSet(Ab_Database $db, $teamid, $userid){
-		$sql = "
-			INSERT INTO ".$db->prefix."team_userrole
-			(teamid, userid, isjoinrequest, dateline, upddate) VALUES (
-				".bkint($teamid).",
-				".bkint($userid).",
-				1,
-				".TIMENOW.",
-				".TIMENOW."
-			) ON DUPLICATE KEY UPDATE
-				isjoinrequest=1
-		";
-		$db->query_write($sql);
-	}
-
 	
 	public static function UserByEmail(Ab_Database $db, $email){
 		$sql = "
