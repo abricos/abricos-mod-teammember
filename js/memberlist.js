@@ -359,5 +359,58 @@ Component.entryPoint = function(NS){
 			}
 		}
 	});
-    NS.MemberListWidget = MemberListWidget;    
+    NS.MemberListWidget = MemberListWidget;
+    
+	var MemberSelectWidget = function(container, memberList, cfg){
+		cfg = L.merge({
+			'exclude': null,
+			'value': '',
+			'onChange': null
+		}, cfg || {});
+		
+		MemberSelectWidget.superclass.constructor.call(this, container, {
+			'buildTemplate': buildTemplate, 'tnames': 'select,option'
+		}, memberList, cfg);
+	};
+	YAHOO.extend(MemberSelectWidget, BW, {
+		buildTData: function(memberList, cfg){
+			var lst = "", TM = this._TM;
+
+			var exc = L.isArray(cfg['exclude']) ? cfg['exclude'] : [];
+
+			memberList.foreach(function(member){
+				for (var i=0;i<exc.length;i++){
+					if (member.id == exc[i]){ return; }
+				}
+				
+				var user = Brick.mod.uprofile.viewer.users.get(member.id);
+				if (!L.isValue(user)){ return; }
+				
+				lst += TM.replace('option', {
+					'id': user.id,
+					'tl': user.getUserName()
+				});
+			});
+			return {
+				'rows': lst
+			};
+		},
+		onLoad: function(memberList, cfg){
+			this.setValue(cfg['value']);
+
+			var __self = this;
+			E.on(this.gel('id'), 'change', function(e){
+				NS.life(cfg['onChange'], __self.getValue());
+			});
+		},
+		setValue: function(value){
+			this.elSetValue('id', value);
+		},
+		getValue: function(){
+			return this.gel('id').value;
+		}
+	});
+	NS.MemberSelectWidget = MemberSelectWidget;	
+
+    
 };

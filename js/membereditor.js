@@ -81,13 +81,12 @@ Component.entryPoint = function(NS){
 			var man = taData.manager;
 			
 			if (this.memberid == 0){
-				Brick.console(this.cfg['modName']);
 				var member = new man.MemberClass({
 					'm': this.cfg['modName'],
 					'dtl': {}
 				});
-				member.setTeam(taData.team);
-				__self.onLoadMember(member);
+				member.setTeamAppData(taData);
+				this.onLoadMember(member);
 			}else{
 				var __self = this;
 				man.memberLoad(taData, this.memberid, function(member){
@@ -251,7 +250,7 @@ Component.entryPoint = function(NS){
 			this.elShow('err'+num);
 		},
 		cancel: function(){
-			NS.life(this.callback, 'cancel');
+			NS.life(this.cfg['callback'], 'cancel');
 		},
 		getSaveData: function(){
 			return sd = {
@@ -294,7 +293,7 @@ Component.entryPoint = function(NS){
 			this.team.manager.memberSave(this.team, sd, function(member){
 				__self.elShow('btns');
 				__self.elHide('bloading');
-				NS.life(__self.callback, 'save', member);
+				NS.life(__self.cfg['callback'], 'save', member);
 			});
 		}
 	});
@@ -376,25 +375,30 @@ Component.entryPoint = function(NS){
 		},
 		onLoad: function(taData, cfg){
 			
-			Brick.mod.team.app.foreach(function(man){
-				Brick.console(man);
+			var team = taData.team, memberList = new NS.MemberList();
+			
+			team.extended.foreach(function(eTaData){
+				if (taData == eTaData || eTaData.manager.appName != 'member'){
+					return; 
+				}
 			});
 			
-			/*
-			var gMemberList = NS.Team.globalMemberList.get(team.id);
+			
+			// var gMemberList = NS.Team.globalMemberList.get(team.id);
 			
 			var exc = [];
+			/*
 			team.memberList.foreach(function(member){
 				if (!member.role.isModMember){ return; }
 				exc[exc.length] = member.id;
 			});
-			this.selectWidget = new NS.MemberSelectWidget(this.gel('select'), gMemberList, {
+			/**/
+			this.selectWidget = new NS.MemberSelectWidget(this.gel('select'), memberList, {
 				'exclude': exc,
 				'onChange': function(){
 					NS.life(cfg['callback']);
 				}
 			});
-			/**/
 		},
 		getValue: function(){
 			return this.selectWidget.getValue();

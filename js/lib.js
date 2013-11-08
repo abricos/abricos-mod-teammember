@@ -22,86 +22,7 @@ Component.entryPoint = function(NS){
 
 	this.buildTemplate({}, '');
 	
-	// Данные сообщества
-	var TeamExtendedData = function(team, manager, d){
-		d = L.merge({
-			'members': null,
-			'groups': null,
-			'ingroups': null
-		}, d || {});
-		TeamExtendedData.superclass.constructor.call(this, team, manager, d);
-	};
-	YAHOO.extend(TeamExtendedData, NSTM.TeamExtendedData, {
-		init: function(team, manager, d){
-			
-			this.memberList = new NS.MemberList();
-			this.groupList = new NS.GroupList();
-			this.inGroupList = new NS.InGroupList();
-			
-			TeamExtendedData.superclass.init.call(this, team, manager, d);
-		},
-		update: function(d){
-			TeamExtendedData.superclass.update.call(this, d);
-			
-			this.updateMemberList(d);
-			this.updateGroupList(d);
-			this.updateInGroupList(d);
-		},
-		updateMemberList: function(d){
-			if (!L.isValue(d) || !L.isValue(d['members']) 
-				|| !L.isArray(d['members']['list'])){
-				return;
-			}
-			
-			var man = this.manager, team = this.team,
-				dList = d['members']['list'];
-			
-			for (var i=0; i<dList.length; i++){
-				var di = dList[i],
-					curMember = this.memberList.get(di['id']);
-				if (L.isValue(curMember)){
-					curMember.update(di);
-				}else{
-					var member = new man.MemberClass(di);
-					member.setTeam(team);
-					this.memberList.add(member);
-				}
-			}
-		},
-		updateGroupList: function(d){
-			if (!L.isValue(d) || !L.isValue(d['groups']) 
-					|| !L.isArray(d['groups']['list'])){
-				return;
-			}
-
-			var dList = d['groups']['list'];
-			for (var i=0; i<dList.length; i++){
-				var di = dList[i],
-					curGroup = this.groupList.get(di['id']);
-				
-				if (L.isValue(curGroup)){
-					curGroup.update(di);
-				}else{
-					this.groupList.add(new NS.Group(di));
-				}
-			}
-		},
-		updateInGroupList: function(d){
-			if (!L.isValue(d) || !L.isValue(d['ingroups']) 
-					|| !L.isArray(d['ingroups']['list'])){
-				return;
-			}
-			var dList = d['ingroups']['list'];
-			for (var i=0; i<dList.length; i++){
-				this.inGroupList.add(new NS.InGroup(dList[i]));
-			}
-		}
-	});
-	NS.TeamExtendedData = TeamExtendedData;
-	
-
 	var Member = function(d){
-		Brick.console(d);
 		d = L.merge({
 			'm': '',
 			'tid': 0,
@@ -113,17 +34,15 @@ Component.entryPoint = function(NS){
 			'id': d['uid']
 		}, d['role'] || {});
 		
-		this.manager = MemberManager.get(d['m']);
-		
 		Member.superclass.constructor.call(this, d);
 	};
 	YAHOO.extend(Member, SysNS.Item, {
 		init: function(d){
-			this.team = null;
+			this.taData = null;
 			this.navigator = null;
 			this.detail = null;
 			
-			this.manager = MemberManager.get(d['m']);
+			this.manager = NSTM.app.get(d['m'], 'member');
 			
 			Member.superclass.init.call(this, d);
 		},		
@@ -144,8 +63,8 @@ Component.entryPoint = function(NS){
 				this.detail = new this.manager.MemberDetailClass(d['dtl']);
 			}
 		},
-		setTeam: function(team){
-			this.team = team;
+		setTeamAppData: function(taData){
+			this.taData = taData;
 			this.navigator = new this.manager['NavigatorClass'](this);
 		}
 	});
@@ -264,7 +183,84 @@ Component.entryPoint = function(NS){
 	});
 	NS.InitData = InitData;
 	
-	var MemberManager = function(modname, callback, cfg){
+	// Данные сообщества
+	var TeamExtendedData = function(team, manager, d){
+		d = L.merge({
+			'members': null,
+			'groups': null,
+			'ingroups': null
+		}, d || {});
+		TeamExtendedData.superclass.constructor.call(this, team, manager, d);
+	};
+	YAHOO.extend(TeamExtendedData, NSTM.TeamExtendedData, {
+		init: function(team, manager, d){
+			
+			this.memberList = new NS.MemberList();
+			this.groupList = new NS.GroupList();
+			this.inGroupList = new NS.InGroupList();
+			
+			TeamExtendedData.superclass.init.call(this, team, manager, d);
+		},
+		update: function(d){
+			TeamExtendedData.superclass.update.call(this, d);
+			
+			this.updateMemberList(d);
+			this.updateGroupList(d);
+			this.updateInGroupList(d);
+		},
+		updateMemberList: function(d){
+			if (!L.isValue(d) || !L.isValue(d['members']) 
+				|| !L.isArray(d['members']['list'])){
+				return;
+			}
+			
+			var man = this.manager,
+				dList = d['members']['list'];
+			
+			for (var i=0; i<dList.length; i++){
+				var di = dList[i],
+					curMember = this.memberList.get(di['id']);
+				if (L.isValue(curMember)){
+					curMember.update(di);
+				}else{
+					var member = new man.MemberClass(di);
+					member.setTeamAppData(this);
+					this.memberList.add(member);
+				}
+			}
+		},
+		updateGroupList: function(d){
+			if (!L.isValue(d) || !L.isValue(d['groups']) 
+					|| !L.isArray(d['groups']['list'])){
+				return;
+			}
+
+			var dList = d['groups']['list'];
+			for (var i=0; i<dList.length; i++){
+				var di = dList[i],
+					curGroup = this.groupList.get(di['id']);
+				
+				if (L.isValue(curGroup)){
+					curGroup.update(di);
+				}else{
+					this.groupList.add(new NS.Group(di));
+				}
+			}
+		},
+		updateInGroupList: function(d){
+			if (!L.isValue(d) || !L.isValue(d['ingroups']) 
+					|| !L.isArray(d['ingroups']['list'])){
+				return;
+			}
+			var dList = d['ingroups']['list'];
+			for (var i=0; i<dList.length; i++){
+				this.inGroupList.add(new NS.InGroup(dList[i]));
+			}
+		}
+	});
+	NS.TeamExtendedData = TeamExtendedData;
+	
+	var MemberManager = function(modName, callback, cfg){
 		cfg = L.merge({
 			'TeamExtendedDataClass':TeamExtendedData,
 			'MemberClass':			Member,
@@ -292,7 +288,7 @@ Component.entryPoint = function(NS){
 			'panel': 'MemberRemovePanel'
 		}, cfg['memberEditor'] || {});
 		
-		MemberManager.superclass.constructor.call(this, modname, callback, cfg);
+		MemberManager.superclass.constructor.call(this, modName, 'member', callback, cfg);
 	};
 	YAHOO.extend(MemberManager, Brick.mod.team.TeamAppManager, {
 		init: function(callback, cfg){
