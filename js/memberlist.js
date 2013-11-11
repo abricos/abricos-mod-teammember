@@ -271,15 +271,15 @@ Component.entryPoint = function(NS){
 		},
 		render: function(){
 			var taData = this.teamAppData, man = taData.manager, member = this.member,
-				user = man.users.get(member.id);
-			
+				user = man.users.get(member.userid);
+
 			var TM = this._TM;
 			
 			this.elSetHTML('view', TM.replace('rowview', {
-				'id': member.id,
+				'id': member.userid,
 				'avatar': user.avatar45(),
 				'unm':  user.getUserName(),
-				// 'urlview': team.navigator.memberViewURI(member.id),
+				'urlview': taData.navigator.memberViewURI(user.id),
 				'isinvite': member.role.isInvite ? TM.replace('isinvite') : ""
 			}));
 		},
@@ -321,26 +321,14 @@ Component.entryPoint = function(NS){
 			}
 			return false;
 		},
-		/*
-		checkMemberInList: function(member){
-			return true;
-		},
-		/**/
 		render: function(){
 			this._clearWS();
 			var __self = this, cfg = this.cfg, ws = this._wList, 
 				taData = this.teamAppData;
 
 			taData.memberList.foreach(function(member){
-				// if (!__self.checkMemberInList(member)){ return; }
-				
-				if (!member.role.isModMember){
-					// участник не принадлежит этому модулю
-					return;
-				}
-				
-				
-				if (!taData.memberInGroupList.checkMemberInGroup(member.id, cfg['groupid'])){
+
+				if (!taData.inGroupList.checkInGroup(member.id, cfg['groupid'])){
 					// участник не проходит по фильтру данной группы
 					return;
 				}
@@ -351,7 +339,7 @@ Component.entryPoint = function(NS){
 					}
 				}
 				
-				ws[ws.length] = new NS.MemberListRowWidget(__self.gel('list'), teamAppData, member);
+				ws[ws.length] = new NS.MemberListRowWidget(__self.gel('list'), taData, member);
  			});
 			
 			for (var i=0;i<ws.length;i++){

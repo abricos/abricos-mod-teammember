@@ -62,7 +62,7 @@ class TeamMemberManager extends TeamAppManager {
 			case 'membersave': 	return $this->MemberSaveToAJAX($d->teamid, $d->savedata);
 			case 'memberremove':return $this->MemberRemove($d->teamid, $d->memberid);
 
-			case 'memberlistglobal': return $this->MemberListGlobalToAJAX($d->teamid);
+			// case 'memberlistglobal': return $this->MemberListGlobalToAJAX($d->teamid);
 				
 			case 'grouplist':	return $this->GroupListToAJAX($d->teamid);
 			case 'groupsave': return $this->GroupSaveToAJAX($d->teamid, $d->savedata);
@@ -189,6 +189,7 @@ class TeamMemberManager extends TeamAppManager {
 		$list = $this->NewMemberList();
 		while (($d = $this->db->fetch_array($rows))){
 			$member = $this->NewMember($d);
+				
 			$member->role = $team->Manager()->NewTeamUserRole($team, $member->userid, $d);
 			$list->Add($member);
 				
@@ -211,6 +212,7 @@ class TeamMemberManager extends TeamAppManager {
 		return $ret;
 	}
 	
+	/*
 	public function MemberListGlobal($teamid){
 		$team = $this->Team($teamid);
 		
@@ -246,8 +248,8 @@ class TeamMemberManager extends TeamAppManager {
 		$team = $this->Team($teamid);
 		
 		if (empty($team) || !$team->role->IsAdmin()){ return null; }
-		
 	}
+	/**/
 	
 	public function MemberSave($teamid, $d){
 		$team = $this->Team($teamid);
@@ -265,11 +267,10 @@ class TeamMemberManager extends TeamAppManager {
 	
 				$invite = $this->MemberNewInvite($team, $d->email, $d->fnm, $d->lnm, true);
 	
-				if (is_null($invite)){
-					return null;
-				}
+				if (is_null($invite)){ return null; }
 				$d->id = $invite->user['id'];
 	
+				TeamMemberQuery::MemberAppend($this, $team, $invite->user['id']);
 			}else{
 	
 				// приглашение участника в группу по email
@@ -362,7 +363,7 @@ class TeamMemberManager extends TeamAppManager {
 			}
 		}
 	
-		$this->TeamMemberCountRecalc($teamid);
+		// $this->TeamMemberCountRecalc($teamid);
 	
 		return $d->id;
 	}

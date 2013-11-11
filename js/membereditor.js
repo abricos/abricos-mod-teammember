@@ -388,12 +388,6 @@ Component.entryPoint = function(NS){
 			// var gMemberList = NS.Team.globalMemberList.get(team.id);
 			
 			var exc = [];
-			/*
-			team.memberList.foreach(function(member){
-				if (!member.role.isModMember){ return; }
-				exc[exc.length] = member.id;
-			});
-			/**/
 			this.selectWidget = new NS.MemberSelectWidget(this.gel('select'), memberList, {
 				'exclude': exc,
 				'onChange': function(){

@@ -44,7 +44,6 @@ Component.entryPoint = function(NS){
 	YAHOO.extend(Member, SysNS.Item, {
 		init: function(d){
 			this.taData = null;
-			this.navigator = null;
 			this.detail = null;
 			
 			this.manager = NSTM.app.get(d['m'], 'member');
@@ -58,19 +57,12 @@ Component.entryPoint = function(NS){
 			
 			this.role 		= new NSTM.TeamUserRole(d['role']);
 			
-			/*
-			if (this.id > 0){
-				_ETMODULENAMECACHE[this.id|0] = this.module;
-			}
-			/**/
-			
 			if (L.isValue(d['dtl'])){
 				this.detail = new this.manager.MemberDetailClass(d['dtl']);
 			}
 		},
 		setTeamAppData: function(taData){
 			this.taData = taData;
-			this.navigator = new this.manager['NavigatorClass'](this);
 		}
 	});
 	NS.Member = Member;
@@ -85,9 +77,7 @@ Component.entryPoint = function(NS){
 		init: function(d){
 			this.update(d);
 		},
-		update: function(d){
-			// this.address = d['adr'];
-		}
+		update: function(d){ }
 	};
 	NS.MemberDetail = MemberDetail;
 	
@@ -154,25 +144,6 @@ Component.entryPoint = function(NS){
 	});
 	NS.InGroupList = InGroupList;
 	
-	var Navigator = function(member){
-		this.init(member);
-	};
-	Navigator.prototype = {
-		init: function(member){
-			this.member = member;
-		},
-		URI: function(){
-			return this.member.team.navigator.URI()+this.member.module+'/';
-		},
-		memberList: function(){
-			return this.URI()+'memberlist/TeamMemberListWidget/';
-		},
-		memberView: function(){
-			return this.URI()+'memberview/TeamMemberViewWidget/'+this.member.id+'/';
-		}
-	};
-	NS.Navigator = Navigator;
-		
 	var InitData = function(manager, d){
 		d = L.merge({
 			'iwCount': 0,
@@ -265,6 +236,16 @@ Component.entryPoint = function(NS){
 	});
 	NS.TeamExtendedData = TeamExtendedData;
 	
+	var Navigator = function(taData){
+		Navigator.superclass.constructor.call(this, taData);
+	};
+	YAHOO.extend(Navigator, NSTM.TeamAppNavigator, {
+		memberViewURI: function(userid){
+			return this.URI()+'memberview/MemberViewWidget/'+userid+'/';
+		}
+	});
+	NS.Navigator = Navigator;
+	
 	var MemberManager = function(modName, callback, cfg){
 		cfg = L.merge({
 			'TeamExtendedDataClass':TeamExtendedData,
@@ -303,7 +284,6 @@ Component.entryPoint = function(NS){
 			
 			this.MemberClass		= cfg['MemberClass'];
 			this.MemberDetailClass	= cfg['MemberDetailClass'];
-			this.NavigatorClass		= cfg['NavigatorClass'];
 			
 			this._cacheMember = {};
 		},

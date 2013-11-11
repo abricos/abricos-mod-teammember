@@ -84,13 +84,27 @@ class TeamMemberQuery {
 				LIMIT 1
 			";
 		}
-
+		
 		return $db->query_read($sql);
 	}
 	
 	public static function Member(TeamMemberManager $man, $team, $userid){
 		$rows = TeamMemberQuery::MemberList($man, $team, $userid);
 		return $man->db->fetch_array($rows);
+	}
+	
+	public static function MemberAppend(TeamMemberManager $man, $team, $userid){
+		$db = $man->db;
+		$sql = "
+			INSERT INTO ".$db->prefix."teammember
+			(module, teamid, userid, dateline) VALUES (
+				'".bkstr($man->moduleName)."',
+				".intval($team->id).",
+				".intval($userid).",
+				".TIMENOW."
+			)
+		";
+		$db->query_write($sql);
 	}
 	
 	public static function RelatedModuleList(Ab_Database $db, $teamid){
