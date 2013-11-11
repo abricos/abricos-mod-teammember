@@ -31,7 +31,6 @@ Component.entryPoint = function(NS){
 		d = L.merge({
 			'm': '',
 			'tid': 0,
-			'uid': 0,
 			'role': { }
 		}, d || {});
 		
@@ -53,7 +52,6 @@ Component.entryPoint = function(NS){
 		update: function(d){
 			this.module		= d['m'];
 			this.teamid		= d['tid']|0;
-			this.userid		= d['uid']|0;
 			
 			this.role 		= new NSTM.TeamUserRole(d['role']);
 			
@@ -242,6 +240,9 @@ Component.entryPoint = function(NS){
 	YAHOO.extend(Navigator, NSTM.TeamAppNavigator, {
 		memberViewURI: function(userid){
 			return this.URI()+'memberview/MemberViewWidget/'+userid+'/';
+		},
+		memberListURI: function(){
+			return this.URI()+'memberlist/GroupListWidget/';
 		}
 	});
 	NS.Navigator = Navigator;
@@ -288,60 +289,30 @@ Component.entryPoint = function(NS){
 			this._cacheMember = {};
 		},
 		
-		/*
+		memberLoad: function(taData, userid, callback){
+			var member = taData.memberList.get(userid);
 
-		_updateMember: function(team, d){
-			if (!(L.isValue(d) && L.isValue(d['member']))){
-				return null;
-			}
-			var member = new this.MemberClass(d['member']);
-			member.setTeam(team);
-			return member;
-		},
-		
-		memberLoad: function(memberid, callback, cfg){
-			cfg = L.merge({
-				'reload': false
-			}, cfg || {});
-			
-			var __self = this,
-				member = this._cacheMember[memberid];
-			
-			if (L.isValue(member) && L.isValue(member.detail) && !cfg['reload']){
-				NS.life(callback, member, member.team);
+			if (!L.isValue(member)){
+				NS.life(callback, null);
 				return;
-			}			
+			}
+			
+			if (L.isValue(member) && L.isValue(member.detail)){
+				NS.life(callback, member);
+				return;
+			}
 			
 			this.ajax({
 				'do': 'member',
-				'memberid': memberid
+				'teamid': taData.team.id,
+				'userid': userid
 			}, function(d){
-				
-				if (!L.isValue(d) || !L.isValue(d['member'])){
-					NS.life(callback, null, null);
-					return;
+				if (L.isValue(d) && L.isValue(d['member'])){
+					member.update(d['member']);
 				}
-				Brick.mod.team.teamLoad(d['member']['tid'], function(team){
-					var member = null;
-					if (L.isValue(team)){
-						member = __self._updateMember(team, d);
-						__self._cacheMember[memberid] = member;
-					}
-					NS.life(callback, member, team);
-				});
-			});			
-		},
-		
-		memberRemove: function(team, memberid, callback){
-			this.ajax({
-				'do': 'memberremove',
-				'teamid': team.id,
-				'memberid': memberid
-			}, function(d){
-				NS.life(callback);
+				NS.life(callback, member);
 			});
 		},
-		/**/
 		memberSave: function(taData, sd, callback){
 			this.ajax({
 				'do': 'membersave',
@@ -356,6 +327,17 @@ Component.entryPoint = function(NS){
 				NS.life(callback, member);
 			});
 		},
+		/*
+		memberRemove: function(team, memberid, callback){
+			this.ajax({
+				'do': 'memberremove',
+				'teamid': team.id,
+				'memberid': memberid
+			}, function(d){
+				NS.life(callback);
+			});
+		},
+		/**/
 		groupSave: function(taData, sd, callback){
 			this.ajax({
 				'do': 'groupsave',

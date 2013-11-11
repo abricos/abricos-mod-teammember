@@ -45,7 +45,6 @@ class TeamMemberInitData extends TeamAppInitData {
 class TeamMember extends AbricosItem {
 
 	public $teamid;
-	public $userid;
 	public $module;
 	
 	/**
@@ -63,14 +62,12 @@ class TeamMember extends AbricosItem {
 		parent::__construct($d);
 		
 		$this->teamid = intval($d['tid']);
-		$this->userid = intval($d['uid']);
 		$this->module = strval($d['m']);
 	}
 	
 	public function ToAJAX(){
 		$ret = parent::ToAJAX();
 		$ret->tid	= $this->teamid;
-		$ret->uid	= $this->userid;
 		$ret->m		= $this->module;
 
 		$ret->role = $this->role->ToAJAX();

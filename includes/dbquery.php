@@ -33,9 +33,8 @@ class TeamMemberQuery {
 		
 		$sql = "
 			SELECT
-				m.teammemberid as id,
+				m.userid as id,
 				m.teamid as tid,
-				m.userid as uid,
 				m.module as m,
 				ur.ismember,
 				ur.isadmin,

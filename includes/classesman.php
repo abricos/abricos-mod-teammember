@@ -57,13 +57,11 @@ class TeamMemberManager extends TeamAppManager {
 	public function AJAXMethod($d){
 		switch($d->do){
 			
-			case 'member':	 	return $this->MemberToAJAX($d->teamid, $d->memberid);
+			case 'member':	 	return $this->MemberToAJAX($d->teamid, $d->userid);
 			case 'memberlist': 	return $this->MemberListToAJAX($d->teamid);
 			case 'membersave': 	return $this->MemberSaveToAJAX($d->teamid, $d->savedata);
 			case 'memberremove':return $this->MemberRemove($d->teamid, $d->memberid);
 
-			// case 'memberlistglobal': return $this->MemberListGlobalToAJAX($d->teamid);
-				
 			case 'grouplist':	return $this->GroupListToAJAX($d->teamid);
 			case 'groupsave': return $this->GroupSaveToAJAX($d->teamid, $d->savedata);
 			case 'groupremove': return $this->GroupRemoveToAJAX($d->teamid, $d->groupid);
@@ -130,33 +128,32 @@ class TeamMemberManager extends TeamAppManager {
 	 * @param integer $memberid
 	 * @return Member
 	 */
-	public function Member($teamid, $memberid){
-	
+	public function Member($teamid, $userid){
 		$team = $this->Team($teamid);
-		if (empty($team)){
-			return null;
-		}
+		if (empty($team)){ return null; }
 	
-		$row = TeamMemberQuery::Member($this, $team, $memberid);
+		$row = TeamMemberQuery::Member($this, $team, $userid);
 		if (empty($row)){
 			return null;
 		}
 	
-		$member = $this->NewMember($team, $row);
+		$member = $this->NewMember($row);
+		
+		$member->role = $team->Manager()->NewTeamUserRole($team, $member->id, $d);
 	
-		$member->detail = $this->NewMemberDetail($member);
+		$member->detail = $this->NewMemberDetail($member, $row);
 	
 		return $member;
 	}
 	
-	public function MemberToAJAX($teamid, $memberid){
-		$member = $this->Member($teamid, $memberid);
+	public function MemberToAJAX($teamid, $userid){
+		$member = $this->Member($teamid, $userid);
 	
 		if (empty($member)){
 			return null;
 		}
 	
-		TeamUserManager::AddId($memberid);
+		TeamUserManager::AddId($userid);
 	
 		$ret = new stdClass();
 		$ret->member = $member->ToAJAX();
@@ -189,11 +186,11 @@ class TeamMemberManager extends TeamAppManager {
 		$list = $this->NewMemberList();
 		while (($d = $this->db->fetch_array($rows))){
 			$member = $this->NewMember($d);
-				
-			$member->role = $team->Manager()->NewTeamUserRole($team, $member->userid, $d);
+
+			$member->role = $team->Manager()->NewTeamUserRole($team, $member->id, $d);
 			$list->Add($member);
 				
-			TeamUserManager::AddId($member->userid);
+			TeamUserManager::AddId($member->id);
 		}
 		$this->CacheAdd($cacheName, $teamid, $list);
 	
@@ -211,45 +208,6 @@ class TeamMemberManager extends TeamAppManager {
 	
 		return $ret;
 	}
-	
-	/*
-	public function MemberListGlobal($teamid){
-		$team = $this->Team($teamid);
-		
-		if (empty($team) || !$team->role->IsAdmin()){ return null; }
-		
-		$cacheName = "globalmemberlist";
-		
-		if ($clearCache){
-			$this->CacheClear($cacheName, $teamid);
-		}
-		
-		$list = $this->Cache($cacheName, $teamid);
-		
-		if (!empty($list)){
-			return $list;
-		}
-		
-		$rows = TeamMemberQuery::MemberListGlobal($this, $team);
-		$list = new TeamMemberList();
-		while (($d = $this->db->fetch_array($rows))){
-			$member = new TeamMember($d);
-			$member->role = $team->Manager()->NewTeamUserRole($team, $member->userid, $d);
-			$list->Add($member);
-		
-			TeamUserManager::AddId($member->userid);
-		}
-		$this->CacheAdd($cacheName, $teamid, $list);
-		
-		return $list;		
-	}
-	
-	public function MemberListGlobalToAJAX($teamid){
-		$team = $this->Team($teamid);
-		
-		if (empty($team) || !$team->role->IsAdmin()){ return null; }
-	}
-	/**/
 	
 	public function MemberSave($teamid, $d){
 		$team = $this->Team($teamid);

@@ -21,7 +21,7 @@ Component.entryPoint = function(NS){
 	var MemberViewWidgetAbstract = function(container, teamid, memberid, cfg){
 		cfg = L.merge({
 			'override': null,
-			'modName': 'team',
+			'modName': null,
 			'act': '',
 			'param': ''
 		}, cfg || {});
@@ -39,47 +39,46 @@ Component.entryPoint = function(NS){
 			this.teamid = teamid;
 			this.memberid = memberid;
 			
-			this.team = null;
+			this.taData = null;
 			this.member = null;
 			
 			this._editor = null;
 		},
 		onLoad: function(teamid, memberid, cfg){
-			var __self = this, Manager = Brick.mod.team.Manager;
-			Manager.teamLoad(teamid, function(team){
-				Manager.init(cfg['modName'], function(man){
-					man.memberLoad(team, memberid, function(member){
-						__self.onLoadTeam(team, member);
+			var __self = this;
+			Brick.mod.team.teamAppDataLoad(teamid, cfg['modName'], 'member', function(taData){
+				__self.taData = taData;
+				if (L.isValue(taData)){
+					taData.manager.memberLoad(taData, memberid, function(member){
+						__self.onLoadMember(member);
 					});
-				});
+				}else{
+					__self.onLoadMember(null);
+				}
 			});
 		},
-		onLoadTeam: function(team, member){
-			this.team = team;
+		onLoadMember: function(member){
 			this.member = member;
 
-			this.renderDetail();
-		},
-		renderDetail: function(){
 			this.elHide('loading,nullitem,rlwrap');
-
-			var team = this.team, member = this.member;
+			
 			if (!L.isValue(member)){
 				this.elShow('nullitem');
+				return;
 			}else{
 				this.elShow('rlwrap');
 			}
-			
-			if (L.isNull(team) || L.isNull(member)){ return; }
+
+			var taData = this.taData, team = taData.team;
 
 			this.elSetVisible('btns', team.role.isAdmin);
 			
-			this.gel('urlmemberlist').href = team.navigator.memberListURI();
+			this.gel('urlmemberlist').href = taData.navigator.memberListURI();
 
 			var cfg = this.cfg,
-				user = team.manager.users.get(member.id),
-				groupid = team.memberInGroupList.getGroupId(member.id),
-				group = team.groupList.get(groupid);
+				user = taData.manager.users.get(member.id),
+				groupid = taData.inGroupList.getGroupId(member.id),
+				group = taData.groupList.get(groupid);
 			
 			this.elSetHTML({
 				'unm': user.getUserName(),

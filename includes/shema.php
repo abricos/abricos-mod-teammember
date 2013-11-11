@@ -21,17 +21,16 @@ if ($updateManager->isInstall()){
 	 */
 	$db->query_write("
 		CREATE TABLE IF NOT EXISTS ".$pfx."teammember (
-			`teammemberid` int(10) unsigned NOT NULL auto_increment COMMENT 'Идентификатор группы',
+			`module` varchar(25) NOT NULL DEFAULT '' COMMENT 'Приложение (модуль)',
 			`teamid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Сообщество',
 			`userid` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Пользователь',
-			`module` varchar(25) NOT NULL DEFAULT '' COMMENT 'Приложение (модуль)',
 				
 			`dateline` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата создания',
-			`deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 			`upddate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата обновления',
+			`deldate` int(10) unsigned NOT NULL DEFAULT 0 COMMENT 'Дата удаления',
 	
-			PRIMARY KEY  (`teammemberid`),
-			KEY `teammember` (`teamid`, `userid`, `module`, `deldate`)
+			UNIQUE KEY `member` (`teamid`, `userid`, `module`),
+			KEY `deldate` (`deldate`)
 		)".$charset
 	);
 	

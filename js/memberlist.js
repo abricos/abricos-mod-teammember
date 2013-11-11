@@ -271,12 +271,12 @@ Component.entryPoint = function(NS){
 		},
 		render: function(){
 			var taData = this.teamAppData, man = taData.manager, member = this.member,
-				user = man.users.get(member.userid);
+				user = man.users.get(member.id);
 
 			var TM = this._TM;
 			
 			this.elSetHTML('view', TM.replace('rowview', {
-				'id': member.userid,
+				'id': member.id,
 				'avatar': user.avatar45(),
 				'unm':  user.getUserName(),
 				'urlview': taData.navigator.memberViewURI(user.id),
