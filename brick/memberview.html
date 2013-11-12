@@ -1,0 +1,24 @@
+<!--[*]
+[script]brick_teamview.php[/script]
+[p=uri]{v#teammod}/wsitem/wsi/{v#teamid}/[/p]
+
+[*]-->
+<div id="bos" class="mod-team">
+	<div class="static">
+		<div id="mod-team-container" style="min-height: 220px;">
+			<div style="width: 300px; margin: 150px auto; text-align: center">
+				Пожалуйста, подождите<br />
+				<img src="/images/loading.gif" /> Идет загрузка данных...
+			</div>
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	Brick.ff('bos', 'os', function(){
+		var NS = Brick.mod.bos;
+		NS.wait={show: function(){},hide: function(){}};
+		var el = document.getElementById('mod-team-container');
+		new NS.PageManagerWidget(el, '{v#uri}');
+	});
+</script>

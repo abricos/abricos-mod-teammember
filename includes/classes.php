@@ -14,7 +14,7 @@ class TeamMemberNavigator extends TeamAppNavigator {
 	
 	public function MemberView(Team $team, $userid){
 		$url = $this->URL($team);
-		return $url."u_".$userid;
+		return $url."u_".$userid."/";
 	}
 	
 }

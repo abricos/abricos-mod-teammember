@@ -7,7 +7,7 @@
  */
 require_once 'dbquery.php';
 
-class TeamMemberManager extends TeamAppManager {
+abstract class TeamMemberManager extends TeamAppManager {
 	
 	/**
 	 * @var TeamMember
@@ -22,7 +22,7 @@ class TeamMemberManager extends TeamAppManager {
 	/**
 	 * @param Ab_ModuleManager $modManager
 	 */
-	public function __construct(Ab_ModuleManager $mman, $appName = ''){
+	public function __construct(Ab_ModuleManager $mman, $appName){
 		parent::__construct($mman, $appName);
 		
 		$this->TeamAppNavigatorClass	= TeamMemberNavigator;
@@ -77,8 +77,8 @@ class TeamMemberManager extends TeamAppManager {
 	 * @return TeamMemberNavigator
 	 * @see TeamAppManager::Navigator()
 	 */
-	public function Navigator($isURL = false){
-		return parent::Navigator($isURL);
+	public function Navigator($isAbs = false){
+		return parent::Navigator($isAbs);
 	}
 	
 	public function InitData(){
@@ -399,7 +399,7 @@ class TeamMemberManager extends TeamAppManager {
 			"author" => TeamUserManager::Get($this->userid)->UserNameBuild(),
 			"teamtitle" => $team->title,
 			"username" => $fname." ".$lname,
-			"inviteurl" =>  $invite->URL."/".$this->Navigator()->MemberView($team, $inu['id'], $this->moduleName),
+			"inviteurl" =>  $invite->URL.$this->Navigator()->MemberView($team, $inu['id'], $this->moduleName),
 			"login" => $inu['login'],
 			"password" => $inu['password'],
 			"email" => $email,
@@ -647,9 +647,12 @@ class TeamMemberManager extends TeamAppManager {
 		TeamMemberQuery::MyNameUpdate($this->db, $this->userid, $d);
 	
 		return $d;
-	}	
-		
-
+	}
+	
+	protected function GetBrickBuilderInstance(){
+		require_once 'classbrick.php';
+		return new TeamMemberBrickBuilder($this);
+	}
 }
 
 
