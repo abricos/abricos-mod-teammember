@@ -59,7 +59,11 @@ Component.entryPoint = function(NS){
 		},
 		onLoadMember: function(member){
 			this.member = member;
+			this.render();
+		},
+		render: function(){
 
+			var member = this.member;
 			this.elHide('loading,nullitem,rlwrap');
 			
 			if (!L.isValue(member)){
@@ -105,6 +109,15 @@ Component.entryPoint = function(NS){
 				}
 				this.elShow('empstat');
 			}
+			if (team.role.isAdmin){
+				// предварительная прогрузка редакторов
+				var __self = this, mcfg = taData.manager.cfg['memberEditor'];
+				this.componentLoad(mcfg['module'], mcfg['component'], function(){
+					mcfg = taData.manager.cfg['memberRemove'];
+					__self.componentLoad(mcfg['module'], mcfg['component'], function(){
+					}, {'hide': 'bbtns', 'show': 'edloading'});
+				}, {'hide': 'bbtns', 'show': 'edloading'});
+			}
 		},		
 		onClick: function(el, tp){
 			switch(el.id){
@@ -114,43 +127,36 @@ Component.entryPoint = function(NS){
 			return false;
 		},
 		closeEditors: function(){
-			if (L.isNull(this._editor)){ return; }
-			this._editor.destroy();
-			this._editor = null;
-			this.elShow('btns,list,view');
+			if (L.isValue(this._editor)){ 
+				this._editor.destroy();
+				this._editor = null;
+			}
+			this.elShow('btns,view');
 		},
 		showMemberEditor: function(){
 			this.closeEditors();
 			
-			var __self = this, mcfg = this.team.manager.cfg['memberEditor'];
-
-			this.componentLoad(mcfg['module'], mcfg['component'], function(){
-				__self.showMemberEditorMethod();
-			}, {'hide': 'bbtns', 'show': 'edloading'});
-		},
-		showMemberEditorMethod: function(){
-			this.elHide('btns,list,view');
-
-			var __self = this, mcfg = this.team.manager.cfg['memberEditor'];
-			this._editor = new Brick.mod[mcfg['module']][mcfg['widget']](this.gel('editor'), this.team, this.member, function(act, member){
-				__self.closeEditors();
-				if (act == 'save'){
-					if (L.isValue(member)){
-						__self.member = member;
+			this.elHide('btns,view');
+			
+			var __self = this, taData = this.taData, member = this.member,
+				mcfg = taData.manager.cfg['memberEditor'];
+			this._editor = new Brick.mod[mcfg['module']][mcfg['widget']](this.gel('editor'), taData.team.id, member.id, {
+				'callback': function(act, member){
+					__self.closeEditors();
+					if (act == 'save'){
+						if (L.isValue(member)){
+							__self.member = member;
+						}
+						__self.renderDetail();
 					}
-					__self.renderDetail();
 				}
 			});
 		},
 		showMemberRemovePanel: function(){
-			this.closeEditors();
-			
-			var mcfg = this.team.manager.cfg['memberRemove'];
-			this.componentLoad(mcfg['module'], mcfg['component'], function(){
-				new new Brick.mod[mcfg['module']][mcfg['panel']](team, member, function(act){
-					Brick.Page.reload(NS.navigator.company.depts.view(team.id));
-				});
-			}, {'hide': 'bbtns', 'show': 'edloading'});
+			var taData = this.taData, mcfg = taData.manager.cfg['memberRemove'];
+			new Brick.mod[mcfg['module']][mcfg['panel']](taData, this.member, function(act){
+				Brick.Page.reload(taData.navigator.memberListURI());
+			});
 		}
 	});
 	NS.MemberViewWidgetAbstract = MemberViewWidgetAbstract;

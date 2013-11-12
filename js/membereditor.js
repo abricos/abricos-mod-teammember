@@ -231,7 +231,7 @@ Component.entryPoint = function(NS){
 				if (member.id == UID){
 					this.elEnable('userfname,userlname');
 				}
-				var user = this.team.manager.users.get(member.id);
+				var user = taData.manager.users.get(member.id);
 				if (!L.isNull(user)){
 					this.elSetValue({
 						'userfname': user.firstName,

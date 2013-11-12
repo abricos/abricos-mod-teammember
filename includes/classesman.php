@@ -238,9 +238,7 @@ class TeamMemberManager extends TeamAppManager {
 				}
 				$rd = TeamMemberModuleManager::$instance->UserFindByEmail($d->email);
 	
-				if (empty($rd)){
-					return null;
-				}
+				if (empty($rd)){ return null; }
 	
 				if (!empty($rd->user) && $rd->user['id'] == $this->userid){
 					if ($team->role->IsMember()){
@@ -269,10 +267,14 @@ class TeamMemberManager extends TeamAppManager {
 						$this->MemberNewInviteSendMail($team, $d->email, $d->fnm, $d->lnm, $invite);
 	
 						$d->id = $invite->user['id'];
+						
+						TeamMemberQuery::MemberAppend($this, $team, $invite->user['id']);
 					}else{
 						// выслать приглашение существующему пользователю
 						$d->id = $rd->user['id'];
-	
+						
+						TeamMemberQuery::MemberAppend($this, $team, $invite->user['id']);
+						
 						$member = $this->Member($teamid, $rd->user['id']);
 	
 						if (!empty($member) && $member->role->IsMember()){
