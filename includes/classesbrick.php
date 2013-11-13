@@ -8,29 +8,33 @@
 
 require_once 'modules/team/includes/classesbrick.php';
 
-class TeamMemberBrickBuilder extends TeamAppBrickBuilder{
+class TeamMemberBrickBuilder extends TeamAppBrickBuilder {
 
 	/**
 	 * @var TeamMemberManager
 	 */
 	public $manager;
 	
-	public function GetBrickName(){
+	public function GetBrickInfo(){
 		$adr = Abricos::$adress;
 		$lvl = $adr->level;
 		$dir = $adr->dir;
 		
-		if ($lvl == 5){
-			return 'memberlist';
+		$bkInfo = new TeamAppBrickInfo("teammember");
+
+		if ($lvl == 4){
+			return $bkInfo->SetName('memberlist');
 		}
 		
-		$memberid = intval($dir[4]);
+		$userid = intval($dir[4]);
 		
-		if ($memberid > 0 && $memberid == $dir[4]){
-			return 'memberview';
+		if ($userid > 0 && $userid == $dir[4]){
+			return $bkInfo->Set('memberview', array(
+				"userid" => $userid
+			));
 		}
 		
-		return '';
+		return null;
 	}
 }
 

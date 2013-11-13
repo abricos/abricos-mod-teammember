@@ -649,9 +649,9 @@ abstract class TeamMemberManager extends TeamAppManager {
 		return $d;
 	}
 	
-	protected function GetBrickBuilderInstance(){
-		require_once 'classbrick.php';
-		return new TeamMemberBrickBuilder($this);
+	protected function GetBrickBuilderInstance(Team $team){
+		require_once 'classesbrick.php';
+		return new TeamMemberBrickBuilder($this, $team);
 	}
 }
 

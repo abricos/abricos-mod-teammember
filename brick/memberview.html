@@ -1,6 +1,8 @@
 <!--[*]
-[script]brick_teamview.php[/script]
-[p=uri]{v#teammod}/wsitem/wsi/{v#teamid}/[/p]
+[script]brick_memberview.php[/script]
+[p=url]{v#teammod}/wsitem/wsi/{v#teamid}/{v#appmodname}/memberview/MemberViewWidget/{v#userid}/[/p]
+[p=userid][/p]
+[p=builder][/p]
 
 [*]-->
 <div id="bos" class="mod-team">
@@ -19,6 +21,6 @@
 		var NS = Brick.mod.bos;
 		NS.wait={show: function(){},hide: function(){}};
 		var el = document.getElementById('mod-team-container');
-		new NS.PageManagerWidget(el, '{v#uri}');
+		new NS.PageManagerWidget(el, '{v#url}');
 	});
 </script>
