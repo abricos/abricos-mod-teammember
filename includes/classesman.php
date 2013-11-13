@@ -499,9 +499,9 @@ abstract class TeamMemberManager extends TeamAppManager {
 			TeamQuery::MemberInviteSetReject($this->db, $teamid, $userid);
 		}
 	
-		$this->TeamMemberCountRecalc($teamid);
+		// $this->TeamMemberCountRecalc($teamid);
 	
-		$this->CacheClear($teamid);
+		$this->CacheClear();
 	
 		return $userid;
 	}

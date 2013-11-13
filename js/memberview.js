@@ -95,7 +95,7 @@ Component.entryPoint = function(NS){
 			if (!member.role.isMember && (member.role.isJoinRequest || member.role.isInvite)){
 
 				if (UID == member.id){
-					new NS.MemberInviteActWidget(this.gel('empstat'), team, member, {
+					new NS.MemberInviteActWidget(this.gel('empstat'), taData, member, {
 						'override': cfg['override']
 					});
 				}else{ // профиль смотрит админ
@@ -175,7 +175,7 @@ Component.entryPoint = function(NS){
 			this.cfg = cfg;
 		},
 		buildTData: function(taData, member, cfg){
-			var author = taData.users.get(member.role.relUserId);
+			var author = taData.manager.users.get(member.role.relUserId);
 			if (L.isNull(author)){
 				return {};
 			}
@@ -203,12 +203,7 @@ Component.entryPoint = function(NS){
 			
 			var taData = this.taData;
 			
-			var sd = {
-				'teamid': taData.team.id,
-				'userid': this.member.id,
-				'flag': flag
-			};
-			taData.manager.memberInviteAccept(taData, sd, function(member){
+			taData.manager.memberInviteAccept(taData, this.member.id, flag, function(member){
 				var pageReload = function(){
 					var url = taData.navigator.memberListURI();
 					if (L.isValue(member)){

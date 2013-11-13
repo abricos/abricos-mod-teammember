@@ -327,9 +327,13 @@ Component.entryPoint = function(NS){
 				NS.life(callback, member);
 			});
 		},
-		memberInviteAccept: function(taData, sd, callback){
-			sd['do'] = 'memberinviteact';
-			this.ajax(sd, function(d){
+		memberInviteAccept: function(taData, userid, flag, callback){
+			this.ajax({
+				'do': 'memberinviteact',
+				'teamid': taData.team.id,
+				'userid': userid,
+				'flag': flag ? 1 : 0
+			}, function(d){
 				taData.update(d);
 				var member = null;
 				if (L.isValue(d)){
