@@ -281,8 +281,6 @@ Component.entryPoint = function(NS){
 		init: function(callback, cfg){
 			MemberManager.superclass.init.call(this, callback, cfg);
 			
-			this.cfg = cfg;
-			
 			this.MemberClass		= cfg['MemberClass'];
 			this.MemberDetailClass	= cfg['MemberDetailClass'];
 			
