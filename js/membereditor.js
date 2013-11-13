@@ -24,7 +24,8 @@ Component.entryPoint = function(NS){
 		cfg = L.merge({
 			'modName': null,
 			'callback': null,
-			'override': null
+			'override': null,
+			'groupid': 0
 		}, cfg || {});
 		MemberEditorWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'widget', 
@@ -104,8 +105,7 @@ Component.entryPoint = function(NS){
 				return;
 			}
 			
-			var cfg = this.cfg;
-			
+			var cfg = this.cfg, groupid = cfg['groupid'];
 			if (this.memberid == 0){
 				var __self = this;
 				this.inviteWidget = new NS.MemberInviteWidget(this.gel('invite'), taData, {
@@ -121,8 +121,9 @@ Component.entryPoint = function(NS){
 						__self.render();
 					}
 				});
+			}else{
+				groupid = taData.inGroupList.getGroupId(this.memberid);
 			}
-			var groupid = taData.inGroupList.getGroupId(this.memberid);
 			this.groupSelectWidget = new NS.GroupSelectWidget(this.gel('groups'), taData, groupid);
 
 			this.render();

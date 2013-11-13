@@ -36,7 +36,7 @@ Component.entryPoint = function(NS){
 			this.cfg = cfg;
 			
 			this.team = null;
-			this.teamAppData = null;
+			this.taData = null;
 			
 			this._editor = null;
 			this._wList = [];
@@ -64,7 +64,7 @@ Component.entryPoint = function(NS){
 			
 			var __self = this;
 			this.team.extended.load(this.cfg['modName'], 'member', function(appData){
-				__self.teamAppData = appData;
+				__self.taData = appData;
 				__self.render();
 			});
 		},
@@ -90,7 +90,7 @@ Component.entryPoint = function(NS){
 			return false;
 		},
 		render: function(){
-			var team = this.team, taData = this.teamAppData;
+			var team = this.team, taData = this.taData;
 			if (!L.isValue(taData)){ return; }
 			
 			this.elHide('loading');
@@ -136,7 +136,7 @@ Component.entryPoint = function(NS){
 		showGroupEditor: function(groupid){
 			groupid = groupid || 0;
 			this.closeEditors();
-			var __self = this, taData = this.teamAppData, 
+			var __self = this, taData = this.taData, 
 				mcfg = taData.manager.cfg['groupEditor'];
 			var group = groupid==0 ? new NS.Group() : taData.groupList.get(groupid);
 			
@@ -154,7 +154,7 @@ Component.entryPoint = function(NS){
 		showMemberEditor: function(memberid){
 			this.closeEditors();
 			
-			var __self = this, taData = this.teamAppData, mcfg = taData.manager.cfg['memberEditor'];
+			var __self = this, taData = this.taData, mcfg = taData.manager.cfg['memberEditor'];
 
 			this.elHide('btns,list,emplist');
 			
@@ -171,7 +171,7 @@ Component.entryPoint = function(NS){
 	});
 	NS.GroupListWidget = GroupListWidget;
 
-	var GroupRowWidget = function(container, teamAppData, group, cfg){
+	var GroupRowWidget = function(container, taData, group, cfg){
 		cfg = L.merge({
 			'onReloadList': null,
 			'MemberListWidgetClass': NS.MemberListWidget,
@@ -180,16 +180,16 @@ Component.entryPoint = function(NS){
 		GroupRowWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'grouprow', 'isRowWidget': true,
 			'override': cfg['override']
-		}, teamAppData, group, cfg);
+		}, taData, group, cfg);
 	};
 	YAHOO.extend(GroupRowWidget, BW, {
-		init: function(teamAppData, group, cfg){
-			this.teamAppData = teamAppData;
+		init: function(taData, group, cfg){
+			this.taData = taData;
 			this.group = group;
 			this.cfg = cfg;
 			this._editor = null;
 		},
-		buildTData: function(teamAppData, group, cfg){
+		buildTData: function(taData, group, cfg){
 			return {'tl': group.title};
 		},
 		onClick: function(el, tp){
@@ -201,7 +201,7 @@ Component.entryPoint = function(NS){
 			return false;
 		},
 		render: function(){
-			var taData = this.teamAppData, group = this.group, cfg = this.cfg;
+			var taData = this.taData, group = this.group, cfg = this.cfg;
 			
 			this.elSetVisible('btns', taData.team.role.isAdmin);
 			this.elSetHTML('grouptl', group.title);
@@ -219,12 +219,12 @@ Component.entryPoint = function(NS){
 		},
 		showGroupEditor: function(){
 			this.closeEditors();
-			var __self = this, teamAppData = this.teamAppData, group = this.group,
-				mcfg = teamAppData.manager.cfg['groupEditor'];
+			var __self = this, taData = this.taData, group = this.group,
+				mcfg = taData.manager.cfg['groupEditor'];
 			this.componentLoad(mcfg['module'], mcfg['component'], function(){
 				__self.elHide('btns,list,emplist');
 
-				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), teamAppData, group, {
+				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), taData, group, {
 					'callback': function(act){
 						__self.closeEditors();
 						if (act == 'save'){ __self.render(); }
@@ -234,43 +234,43 @@ Component.entryPoint = function(NS){
 			}, {'hide': 'bbtns', 'show': 'edloading'});
 		},
 		showMemberEditor: function(memberid){
-			memberid = memberid||0;
 			this.closeEditors();
 			
-			var __self = this, teamAppData = this.teamAppData, group = this.group, 
-				mcfg = teamAppData.manager.cfg['memberEditor'],
-				member = memberid==0 ? new teamAppData.manager.MemberClass(team) : list.get(memberid);
+			var __self = this, taData = this.taData, group = this.group, 
+				mcfg = taData.manager.cfg['memberEditor'];
 
 			this.componentLoad(mcfg['module'], mcfg['component'], function(){
 				__self.elHide('btns,list,view');
 				
-				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), teamAppData, member, function(act, newMember){
-					__self.closeEditors();
-					
-					if (act == 'save'){
-						__self.render(); 
+				__self._editor = new Brick.mod[mcfg['module']][mcfg['widget']](__self.gel('editor'), taData.team.id, memberid|0, {
+					'groupid': group.id,
+					'callback': function(act, member){
+						__self.closeEditors();
+						
+						if (act == 'save'){
+							__self.render(); 
+						}
 					}
 				});
-				__self._editor.groupSelectWidget.setValue(group.id);
 			}, {'hide': 'bbtns', 'show': 'edloading'});
 		}
 		
 	});
     NS.GroupRowWidget = GroupRowWidget;
     
-	var MemberListRowWidget = function(container, teamAppData, member){
+	var MemberListRowWidget = function(container, taData, member){
 		MemberListRowWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'row,rowview,isinvite', 
 			'isRowWidget': true
-		}, teamAppData, member);
+		}, taData, member);
 	};
 	YAHOO.extend(MemberListRowWidget, Brick.mod.widget.Widget, {
-		init: function(teamAppData, member){
-			this.teamAppData = teamAppData;
+		init: function(taData, member){
+			this.taData = taData;
 			this.member = member;
 		},
 		render: function(){
-			var taData = this.teamAppData, man = taData.manager, member = this.member,
+			var taData = this.taData, man = taData.manager, member = this.member,
 				user = man.users.get(member.id);
 
 			var TM = this._TM;
@@ -289,18 +289,18 @@ Component.entryPoint = function(NS){
 	});
     NS.MemberListRowWidget = MemberListRowWidget;
 
-	var MemberListWidget = function(container, teamAppData, cfg){
+	var MemberListWidget = function(container, taData, cfg){
 		cfg = L.merge({
 			'groupid': 0
 		}, cfg || {});
 
 		MemberListWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'list'
-		}, teamAppData, cfg);
+		}, taData, cfg);
 	};
 	YAHOO.extend(MemberListWidget, Brick.mod.widget.Widget, {
-		init: function(teamAppData, cfg){
-			this.teamAppData = teamAppData;
+		init: function(taData, cfg){
+			this.taData = taData;
 			this.cfg = cfg;
 			this._wList = [];
 		},
@@ -324,7 +324,7 @@ Component.entryPoint = function(NS){
 		render: function(){
 			this._clearWS();
 			var __self = this, cfg = this.cfg, ws = this._wList, 
-				taData = this.teamAppData;
+				taData = this.taData;
 
 			taData.memberList.foreach(function(member){
 

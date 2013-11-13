@@ -91,14 +91,10 @@ Component.entryPoint = function(NS){
 			});
 			
 			this.elHide('empstat,btnisjrq,infoisjrq');
+			
 			if (!member.role.isMember && (member.role.isJoinRequest || member.role.isInvite)){
 
-				var cUserId = UID;
-				if (!L.isNull(team.manager.invite)){
-					cUserId = team.manager.invite['user']['id'];
-				}
-				
-				if (cUserId == member.id){
+				if (UID == member.id){
 					new NS.MemberInviteActWidget(this.gel('empstat'), team, member, {
 						'override': cfg['override']
 					});
@@ -161,7 +157,7 @@ Component.entryPoint = function(NS){
 	});
 	NS.MemberViewWidgetAbstract = MemberViewWidgetAbstract;
 	
-	var MemberInviteActWidget = function(container, team, member, cfg){
+	var MemberInviteActWidget = function(container, taData, member, cfg){
 		cfg = L.merge({
 			'callback': null,
 			'override': null
@@ -170,16 +166,16 @@ Component.entryPoint = function(NS){
 		MemberInviteActWidget.superclass.constructor.call(this, container, {
 			'buildTemplate': buildTemplate, 'tnames': 'inviteact',
 			'override': cfg['override']
-		}, team, member, cfg);
+		}, taData, member, cfg);
 	};
 	YAHOO.extend(MemberInviteActWidget, Brick.mod.widget.Widget, {
-		init: function(team, member, cfg){
-			this.team = team;
+		init: function(taData, member, cfg){
+			this.taData = taData;
 			this.member = member;
 			this.cfg = cfg;
 		},
-		buildTData: function(teamid, member, cfg){
-			var author = Brick.mod.uprofile.viewer.users.get(member.role.relUserId);
+		buildTData: function(taData, member, cfg){
+			var author = taData.users.get(member.role.relUserId);
 			if (L.isNull(author)){
 				return {};
 			}
@@ -205,19 +201,18 @@ Component.entryPoint = function(NS){
 			this.elHide('btns');
 			this.elShow('loading');
 			
-			var team = this.team;
+			var taData = this.taData;
 			
 			var sd = {
-				'teamid': team.id,
+				'teamid': taData.team.id,
 				'userid': this.member.id,
 				'flag': flag
 			};
-			team.manager.memberInviteAccept(team, sd, function(member){
-
+			taData.manager.memberInviteAccept(taData, sd, function(member){
 				var pageReload = function(){
-					var url = team.navigator.memberListURI();
+					var url = taData.navigator.memberListURI();
 					if (L.isValue(member)){
-						url = team.navigator.memberListURI(member.id);
+						url = taData.navigator.memberListURI(member.id);
 					}
 					Brick.Page.reload("/bos/"+url);
 				};

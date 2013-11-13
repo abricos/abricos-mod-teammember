@@ -132,16 +132,16 @@ abstract class TeamMemberManager extends TeamAppManager {
 		$team = $this->Team($teamid);
 		if (empty($team)){ return null; }
 	
-		$row = TeamMemberQuery::Member($this, $team, $userid);
-		if (empty($row)){
+		$d = TeamMemberQuery::Member($this, $team, $userid);
+		if (empty($d)){
 			return null;
 		}
 	
-		$member = $this->NewMember($row);
-		
+		$member = $this->NewMember($d);
+
 		$member->role = $team->Manager()->NewTeamUserRole($team, $member->id, $d);
 	
-		$member->detail = $this->NewMemberDetail($member, $row);
+		$member->detail = $this->NewMemberDetail($member, $d);
 	
 		return $member;
 	}

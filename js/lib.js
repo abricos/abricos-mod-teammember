@@ -327,6 +327,17 @@ Component.entryPoint = function(NS){
 				NS.life(callback, member);
 			});
 		},
+		memberInviteAccept: function(taData, sd, callback){
+			sd['do'] = 'memberinviteact';
+			this.ajax(sd, function(d){
+				taData.update(d);
+				var member = null;
+				if (L.isValue(d)){
+					member = taData.memberList.get(d['memberid']);
+				}
+				NS.life(callback, member);
+			});
+		},
 		/*
 		memberRemove: function(team, memberid, callback){
 			this.ajax({
