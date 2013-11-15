@@ -113,6 +113,8 @@ abstract class TeamMemberManager extends TeamAppManager {
 		
 		if (empty($team)){ return null; }
 		
+		$rows = TeamMemberQuery::RelatedModuleList($this->db, $teamid);
+		
 		$list = array();
 		while (($d = $this->db->fetch_array($rows))){
 			if ($d['m'] == $this->moduleName){ continue; }
@@ -216,10 +218,30 @@ abstract class TeamMemberManager extends TeamAppManager {
 		}
 		Abricos::GetModule('teammember')->GetManager();
 		$initData = $this->InitData();
+
+		$memberList = $this->MemberList($teamid);
 		
 		$d->id = intval($d->id);
 	
-		if ($d->id == 0){ // Добавление участника
+		$extMemberId = intval($d->extmemberid);
+		if ($extMemberId > 0){
+			
+			// добавление в участники существующего участника
+			$member = $memberList->Get($extMemberId);
+			if (!empty($member)){
+				// уже есть этот участник в списке этого модуля
+				return null;
+			}
+			
+			$role = $team->Manager()->TeamUserRole($teamid, $extMemberId);
+			if (empty($role) || !($role->IsMember() || $role->IsInvite() || $role->IsJoinRequest())){
+				// участник не в списке сообщества
+				return null;
+			}
+			
+			TeamMemberQuery::MemberAppend($this, $team, $extMemberId);
+			$d->id = $extMemberId;
+		}else if ($d->id == 0){ // Добавление участника
 				
 			if ($d->vrt == 1){ // Добавление виртуального участника
 	

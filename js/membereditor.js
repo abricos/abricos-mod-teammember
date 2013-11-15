@@ -58,7 +58,6 @@ Component.entryPoint = function(NS){
 					// необходимо для выбора из списка участников добавленных в
 					// другие приложения
 					taData.manager.relatedModuleNameList(taData.team, function(related){
-
 						if (related.length > 0){
 							Brick.mod.team.teamAppDataLoad(teamid, related, 'member', function(){
 								__self.onLoadTeamAppData(taData);
@@ -379,14 +378,24 @@ Component.entryPoint = function(NS){
 			
 			var team = taData.team, memberList = new NS.MemberList();
 			
+			if (!L.isValue(taData.memberList.get(UID))){
+				memberList.add(taData.newMember({
+					'id': UID
+				}));
+			}
+			
 			team.extended.foreach(function(eTaData){
 				if (taData == eTaData || eTaData.manager.appName != 'member'){
 					return; 
 				}
+				eTaData.memberList.foreach(function(member){
+					if (L.isValue(taData.memberList.get(member.id))
+						|| L.isValue(memberList.get(member.id))){
+						return;
+					}
+					memberList.add(member);
+				});
 			});
-			
-			
-			// var gMemberList = NS.Team.globalMemberList.get(team.id);
 			
 			var exc = [];
 			this.selectWidget = new NS.MemberSelectWidget(this.gel('select'), memberList, {

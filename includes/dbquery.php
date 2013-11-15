@@ -112,9 +112,8 @@ class TeamMemberQuery {
 				DISTINCT
 				m.module as m
 			FROM ".$db->prefix."teammember m
-			WHERE m.teamid=".bkint($team->id)."
+			WHERE m.teamid=".bkint($teamid)."
 		";
-		
 		return $db->query_read($sql);		
 	}
 	

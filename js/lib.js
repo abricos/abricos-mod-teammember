@@ -182,14 +182,21 @@ Component.entryPoint = function(NS){
 			this.updateGroupList(d);
 			this.updateInGroupList(d);
 		},
+		newMember: function(d){
+			d = L.merge({
+				'tid': this.team.id
+			}, d || {});
+			var member = new this.manager.MemberClass(d);
+			member.setTeamAppData(this);
+			return member;
+		},
 		updateMemberList: function(d){
 			if (!L.isValue(d) || !L.isValue(d['members']) 
 				|| !L.isArray(d['members']['list'])){
 				return;
 			}
 			
-			var man = this.manager,
-				dList = d['members']['list'];
+			var dList = d['members']['list'];
 			
 			for (var i=0; i<dList.length; i++){
 				var di = dList[i],
@@ -197,9 +204,7 @@ Component.entryPoint = function(NS){
 				if (L.isValue(curMember)){
 					curMember.update(di);
 				}else{
-					var member = new man.MemberClass(di);
-					member.setTeamAppData(this);
-					this.memberList.add(member);
+					this.memberList.add(this.newMember(di));
 				}
 			}
 		},
