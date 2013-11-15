@@ -342,6 +342,9 @@ Component.entryPoint = function(NS){
 				if (L.isValue(d)){
 					member = taData.memberList.get(d['memberid']);
 				}
+				if (L.isValue(member) && L.isValue(d) && L.isValue(d['member'])){
+					member.update(d['member']);
+				}
 				NS.life(callback, member);
 			});
 		},

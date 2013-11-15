@@ -143,7 +143,7 @@ Component.entryPoint = function(NS){
 						if (L.isValue(member)){
 							__self.member = member;
 						}
-						__self.renderDetail();
+						__self.render();
 					}
 				}
 			});

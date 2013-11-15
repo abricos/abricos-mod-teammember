@@ -317,7 +317,7 @@ abstract class TeamMemberManager extends TeamAppManager {
 				
 		}
 	
-		$this->CacheClear($teamid);
+		$this->CacheClear();
 	
 		$memberid = $d->id;
 	
@@ -356,7 +356,7 @@ abstract class TeamMemberManager extends TeamAppManager {
 			return null;
 		}
 	
-		$this->CacheClear($teamid);
+		$this->CacheClear();
 	
 		$ret = $this->MemberListToAJAX($teamid);
 	
@@ -611,7 +611,7 @@ abstract class TeamMemberManager extends TeamAppManager {
 			TeamMemberQuery::MemberGroupUpdate($this->db, $teamid, $this->moduleName, $d->id, $d);
 		}
 	
-		$this->CacheClear($teamid);
+		$this->CacheClear();
 	
 		return $d->id;
 	}
