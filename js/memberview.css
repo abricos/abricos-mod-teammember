@@ -4,6 +4,10 @@
 	float: left;
 }
 
+.aw-team .memberview .mbvfooter {
+	margin-top: 10px;
+}
+
 /* * * * * * Приглашение, подтверждение * * * * * */
 .aw-team .memberview .empstat dl {
 	color: red;
