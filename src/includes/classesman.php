@@ -426,7 +426,7 @@ abstract class TeamMemberManager extends TeamAppManager {
 			"password" => $inu['password'],
 			"email" => $email,
 			"teamurl" => $this->Navigator(true)->TeamView($team),
-			"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+			"sitename" => SystemModule::$instance->GetPhrases()->Get('site_name')
 		);
 	
 		$brick = Brick::$builder->LoadBrickS($this->moduleName, 'templates', null, null);
@@ -483,7 +483,7 @@ abstract class TeamMemberManager extends TeamAppManager {
 				// $this->Navigator(true)->MemberView($team->id, $userid, $this->moduleName),
 			"email" => $userEml['email'],
 			"teamurl" => $nav->TeamView($team),
-			"sitename" => Brick::$builder->phrase->Get('sys', 'site_name')
+			"sitename" => SystemModule::$instance->GetPhrases()->Get('site_name')
 		);
 	
 		$brick = Brick::$builder->LoadBrickS($this->moduleName, 'templates', null, null);
