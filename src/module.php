@@ -9,7 +9,7 @@
 class TeamMemberModule extends Ab_Module {
 
 	public function __construct(){
-		$this->version = "0.1";
+		$this->version = "0.1.0";
 		$this->name = "teammember";
 		$this->takelink = "teammember";
 		$this->permission = new TeamMemberPermission($this);
